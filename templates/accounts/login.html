@@ -1,48 +1,401 @@
-{% extends 'base.html' %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Nova Construct - Sign In{% endblock %}</title>
 
-{% block title %}Sign In - Nova Construct Enterprise Work Diary{% endblock %}
+  <!-- Favicons -->
+  <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'apple-touch-icon.png' %}">
 
-{% block content %}
-<div class="nova-auth-wrapper">
-  <div class="nova-auth-card">
-    <div class="text-center mb-4">
-      <span class="nova-eyebrow">OPERATIONAL ACCESS / DIGITAL WORK DIARY</span>
-      <h2 class="font-heading fs-3 fw-bold mb-2">Welcome Back</h2>
-      <p class="text-muted small">Access your multi-project construction management dashboard</p>
-    </div>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <form method="post" action="{% url 'accounts:login' %}" novalidate>
-      {% csrf_token %}
-      
-      <div class="mb-3">
-        <label for="{{ form.username.id_for_label }}" class="form-label fw-semibold small text-dark">Username or ID</label>
-        {{ form.username }}
-        {% if form.username.errors %}
-          <div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>
-        {% endif %}
-      </div>
+  <!-- Bootstrap 5.3.3 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-      <div class="mb-4">
-        <div class="d-flex justify-content-between align-items-center mb-1">
-          <label for="{{ form.password.id_for_label }}" class="form-label fw-semibold small text-dark mb-0">Password</label>
-        </div>
-        {{ form.password }}
-        {% if form.password.errors %}
-          <div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>
-        {% endif %}
-      </div>
+  <style>
+    :root {
+      --nova-navy: #141518;
+      --nova-navy-light: #20242c;
+      --nova-gold: #b8864e;
+      --nova-gold-subtle: rgba(184,134,78,0.12);
+      --nova-bg: #faf9f5;
+      --nova-surface: #ffffff;
+      --nova-border: rgba(20,21,24,0.11);
+      --nova-muted: #5d6069;
+      --nova-shadow-lg: 0 16px 48px rgba(13,21,39,0.12);
+      --font-sans: 'Plus Jakarta Sans', sans-serif;
+      --font-heading: 'Outfit', sans-serif;
+    }
 
-      <div class="d-grid mb-3">
-        <button type="submit" class="btn btn-nova-primary btn-lg fs-6">
-          <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to Workspace
-        </button>
-      </div>
+    *, *::before, *::after { box-sizing: border-box; }
 
-      <div class="p-3 bg-light rounded-3 border small text-muted mt-4">
-        <div class="fw-bold text-dark mb-1"><i class="bi bi-shield-check text-success me-1"></i> Role-Based Access Control</div>
-        <div>Super Admin, Company Admin, Project Manager, Accountant, Legal Officer, Site Supervisor, and Auditor roles enforced on all operations.</div>
-      </div>
-    </form>
+    html, body {
+      margin: 0; padding: 0;
+      min-height: 100vh;
+      font-family: var(--font-sans);
+      background-color: var(--nova-bg);
+      color: var(--nova-navy);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Top bar ── */
+    .auth-topbar {
+      background-color: var(--nova-navy);
+      color: rgba(255,255,255,0.65);
+      font-size: 0.75rem;
+      letter-spacing: 0.04em;
+      padding: 0.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .auth-topbar a { color: rgba(255,255,255,0.75); text-decoration: none; }
+    .auth-topbar a:hover { color: #fff; }
+
+    /* ── Header ── */
+    .auth-header {
+      background: var(--nova-surface);
+      border-bottom: 1px solid var(--nova-border);
+      padding: 0 2rem;
+      height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .auth-logo {
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 1.35rem;
+      letter-spacing: 0.14em;
+      color: var(--nova-navy);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-transform: uppercase;
+    }
+    .auth-logo .badge-construct {
+      background: #f5c842;
+      color: #141518;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      font-family: var(--font-heading);
+    }
+    .auth-header-tag {
+      font-size: 0.8rem;
+      color: var(--nova-muted);
+      font-weight: 500;
+      display: none;
+    }
+    @media (min-width: 576px) { .auth-header-tag { display: block; } }
+
+    /* ── Main layout ── */
+    .auth-main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(2rem, 5vw, 4rem) 1.25rem;
+      min-height: calc(100vh - 68px - 46px - 60px);
+    }
+
+    /* ── Login card ── */
+    .auth-card {
+      background: var(--nova-surface);
+      border: 1px solid var(--nova-border);
+      border-radius: 20px;
+      box-shadow: var(--nova-shadow-lg);
+      padding: clamp(2rem, 5vw, 3rem) clamp(1.75rem, 5vw, 2.75rem);
+      width: 100%;
+      max-width: 460px;
+    }
+
+    .auth-eyebrow {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--nova-gold);
+      margin-bottom: 0.5rem;
+    }
+
+    .auth-title {
+      font-family: var(--font-heading);
+      font-size: clamp(1.6rem, 4vw, 2rem);
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      color: var(--nova-navy);
+      margin: 0 0 0.4rem;
+      line-height: 1.2;
+    }
+
+    .auth-subtitle {
+      font-size: 0.875rem;
+      color: var(--nova-muted);
+      margin-bottom: 2rem;
+    }
+
+    /* ── Form fields ── */
+    .auth-label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--nova-navy);
+      margin-bottom: 0.4rem;
+      letter-spacing: 0.01em;
+    }
+
+    .auth-input {
+      display: block;
+      width: 100%;
+      padding: 0.72rem 1rem;
+      font-size: 0.93rem;
+      font-family: var(--font-sans);
+      color: var(--nova-navy);
+      background: var(--nova-bg);
+      border: 1.5px solid var(--nova-border);
+      border-radius: 10px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      -webkit-appearance: none;
+    }
+    .auth-input:focus {
+      border-color: var(--nova-navy);
+      box-shadow: 0 0 0 3px rgba(20,21,24,0.08);
+      background: #fff;
+    }
+    .auth-input::placeholder { color: #adb0b8; }
+
+    .auth-field { margin-bottom: 1.25rem; }
+
+    .field-error {
+      font-size: 0.78rem;
+      color: #dc3545;
+      margin-top: 0.35rem;
+    }
+
+    /* ── Non-field errors (wrong credentials) ── */
+    .auth-alert {
+      background: #fff5f5;
+      border: 1px solid #fcc;
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      font-size: 0.83rem;
+      color: #c0392b;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    /* ── Submit button ── */
+    .btn-auth {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      padding: 0.82rem 1.5rem;
+      background: var(--nova-navy);
+      color: #fff;
+      font-family: var(--font-heading);
+      font-size: 0.97rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      letter-spacing: 0.01em;
+      margin-top: 0.5rem;
+    }
+    .btn-auth:hover {
+      background: var(--nova-navy-light);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 22px rgba(20,21,24,0.22);
+    }
+    .btn-auth:active { transform: translateY(0); box-shadow: none; }
+
+    /* ── RBAC info box ── */
+    .auth-info-box {
+      background: var(--nova-gold-subtle);
+      border: 1px solid rgba(184,134,78,0.2);
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+      font-size: 0.78rem;
+      color: #6b4c28;
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 0.65rem;
+    }
+    .auth-info-box i { color: var(--nova-gold); font-size: 1rem; flex-shrink: 0; margin-top: 0.05rem; }
+
+    /* ── Divider ── */
+    .auth-divider {
+      border: none;
+      border-top: 1px solid var(--nova-border);
+      margin: 1.5rem 0 1.25rem;
+    }
+
+    /* ── Footer ── */
+    .auth-footer {
+      background: var(--nova-surface);
+      border-top: 1px solid var(--nova-border);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      color: var(--nova-muted);
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    /* ── Background decoration ── */
+    .auth-bg-deco {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .auth-bg-deco::before {
+      content: '';
+      position: absolute;
+      top: -120px; right: -120px;
+      width: 480px; height: 480px;
+      background: radial-gradient(circle, rgba(184,134,78,0.07) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .auth-bg-deco::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; left: -80px;
+      width: 360px; height: 360px;
+      background: radial-gradient(circle, rgba(20,21,24,0.04) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .auth-main { position: relative; z-index: 1; }
+  </style>
+</head>
+<body style="display:flex; flex-direction:column; min-height:100vh;">
+
+  <!-- Top Bar -->
+  <div class="auth-topbar">
+    <span>Enterprise Real Estate Construction Management &amp; Digital Work Diary System</span>
+    <a href="{% url 'accounts:login' %}"><i class="bi bi-journal-bookmark me-1"></i> Work Diary Portal</a>
   </div>
-</div>
-{% endblock %}
+
+  <!-- Header -->
+  <header class="auth-header">
+    <a href="{% url 'accounts:login' %}" class="auth-logo">
+      <span>NOVA</span>
+      <span class="badge-construct">CONSTRUCT</span>
+    </a>
+    <span class="auth-header-tag">Construction Management Platform</span>
+  </header>
+
+  <!-- Background decoration -->
+  <div class="auth-bg-deco"></div>
+
+  <!-- Main Content -->
+  <main class="auth-main">
+    <div class="auth-card">
+
+      <span class="auth-eyebrow">Operational Access / Digital Work Diary</span>
+      <h1 class="auth-title">Welcome Back</h1>
+      <p class="auth-subtitle">Sign in to your multi-project construction management dashboard</p>
+
+      <!-- Non-field errors -->
+      {% if form.non_field_errors %}
+      <div class="auth-alert">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <span>{{ form.non_field_errors.0 }}</span>
+      </div>
+      {% endif %}
+
+      {% if messages %}
+        {% for message in messages %}
+        <div class="auth-alert">
+          <i class="bi bi-exclamation-circle-fill"></i>
+          <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="post" action="{% url 'accounts:login' %}" novalidate>
+        {% csrf_token %}
+
+        <!-- Username -->
+        <div class="auth-field">
+          <label for="{{ form.username.id_for_label }}" class="auth-label">Username or ID</label>
+          <input
+            type="text"
+            id="{{ form.username.id_for_label }}"
+            name="{{ form.username.html_name }}"
+            class="auth-input"
+            placeholder="Enter your username or email"
+            value="{{ form.username.value|default:'' }}"
+            autocomplete="username"
+            autofocus
+          >
+          {% if form.username.errors %}
+            <div class="field-error"><i class="bi bi-exclamation-circle me-1"></i>{{ form.username.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Password -->
+        <div class="auth-field">
+          <label for="{{ form.password.id_for_label }}" class="auth-label">Password</label>
+          <input
+            type="password"
+            id="{{ form.password.id_for_label }}"
+            name="{{ form.password.html_name }}"
+            class="auth-input"
+            placeholder="Enter your password"
+            autocomplete="current-password"
+          >
+          {% if form.password.errors %}
+            <div class="field-error"><i class="bi bi-exclamation-circle me-1"></i>{{ form.password.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <button type="submit" class="btn-auth">
+          <i class="bi bi-box-arrow-in-right"></i> Sign In to Workspace
+        </button>
+      </form>
+
+      <hr class="auth-divider">
+
+      <!-- RBAC Notice -->
+      <div class="auth-info-box">
+        <i class="bi bi-shield-check"></i>
+        <div>
+          <strong style="display:block; margin-bottom:0.2rem; color:#5a3e1b;">Role-Based Access Control</strong>
+          Super Admin, Company Admin, Project Manager, Accountant, Legal Officer, Site Supervisor, and Auditor roles enforced on all operations.
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="auth-footer">
+    <span><strong style="font-family:var(--font-heading); color:var(--nova-navy);">NOVA CONSTRUCT</strong> &nbsp;|&nbsp; Real Estate Construction Management</span>
+    <span>Enterprise Construction Operations &copy; {% now "Y" %}</span>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
