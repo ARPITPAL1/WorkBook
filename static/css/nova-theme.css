@@ -624,3 +624,98 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   color: var(--nova-text-muted);
   font-size: 0.88rem;
 }
+
+/* ==========================================================================
+   AUTH PAGES - Login / Sign-in Card
+   ========================================================================== */
+
+.nova-auth-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 160px);
+  padding: clamp(1.5rem, 4vw, 3rem) 1rem;
+  background-color: var(--nova-bg-page);
+}
+
+.nova-auth-card {
+  background-color: var(--nova-bg-surface);
+  border: 1px solid var(--nova-border-card);
+  border-radius: var(--nova-radius-xl);
+  box-shadow: var(--nova-shadow-lg);
+  padding: clamp(2rem, 5vw, 3rem);
+  width: 100%;
+  max-width: 460px;
+}
+
+.nova-eyebrow {
+  display: block;
+  font-size: 0.73rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--nova-brand-gold);
+  margin-bottom: 0.6rem;
+}
+
+/* Primary login / CTA button */
+.btn-nova-primary {
+  background-color: var(--nova-brand-navy);
+  color: #ffffff !important;
+  border: 1px solid var(--nova-brand-navy);
+  border-radius: var(--nova-radius-md);
+  padding: 0.8rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.98rem;
+  transition: background-color 0.22s ease, transform 0.18s ease, box-shadow 0.22s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  text-decoration: none;
+  width: 100%;
+}
+
+.btn-nova-primary:hover,
+.btn-nova-primary:focus {
+  background-color: var(--nova-brand-navy-light);
+  box-shadow: 0 8px 20px rgba(20, 21, 24, 0.2);
+  transform: translateY(-1px);
+  color: #ffffff !important;
+}
+
+.btn-nova-primary:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* Style Django auth form inputs to match nova-input */
+.nova-auth-card input[type="text"],
+.nova-auth-card input[type="password"],
+.nova-auth-card input[type="email"] {
+  width: 100%;
+  border: 1px solid var(--nova-border-card);
+  border-radius: var(--nova-radius-md);
+  padding: 0.65rem 1rem;
+  background-color: #ffffff;
+  color: var(--nova-text-main);
+  font-family: var(--nova-font-sans);
+  font-size: 0.93rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+}
+
+.nova-auth-card input[type="text"]:focus,
+.nova-auth-card input[type="password"]:focus,
+.nova-auth-card input[type="email"]:focus {
+  border-color: var(--nova-brand-navy);
+  box-shadow: 0 0 0 3px rgba(20, 21, 24, 0.09);
+}
+
+@media (max-width: 575.98px) {
+  .nova-auth-card {
+    border-radius: var(--nova-radius-lg);
+    padding: 1.5rem 1.25rem;
+  }
+}
