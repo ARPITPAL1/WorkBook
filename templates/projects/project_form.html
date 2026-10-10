@@ -1,11 +1,129 @@
 {% extends 'base.html' %}
 
-{% block title %}New Project - Nova Construct{% endblock %}
+{% block title %}Add New Project - Nova Construct{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  <div class="nova-card p-4">
-    <h2>Add New Construction Project</h2>
+<div class="nova-container py-4">
+  <div class="mb-4">
+    <a href="{% url 'projects:project_list' %}" class="text-decoration-none text-muted small fw-semibold">
+      <i class="bi bi-arrow-left me-1"></i> Back to Project Portfolio
+    </a>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="nova-card p-4 p-md-5">
+        <div class="border-bottom pb-4 mb-4">
+          <span class="hero-eyebrow mb-1">SITE INITIALIZATION / WORKSPACE SETUP</span>
+          <h2 class="font-heading fw-bold mb-2">Register New Construction Project</h2>
+          <p class="text-muted small mb-0">Create a centralized operational workspace with dedicated labour diary, materials register, and finance ledger.</p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+          <div class="alert alert-danger">
+            {{ form.non_field_errors }}
+          </div>
+          {% endif %}
+
+          <!-- Section 1: Project Identity -->
+          <h5 class="font-heading fw-bold text-dark mb-3">1. Project Identity</h5>
+          <div class="row g-3 mb-4">
+            <div class="col-md-7">
+              <label class="form-label small fw-semibold">Project Name *</label>
+              {{ form.name }}
+              {% if form.name.errors %}<div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-5">
+              <label class="form-label small fw-semibold">Unique Project Code *</label>
+              {{ form.code }}
+              <div class="form-text small">e.g. PRJ-2026-003</div>
+              {% if form.code.errors %}<div class="text-danger small mt-1">{{ form.code.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Project Type</label>
+              {{ form.project_type }}
+              {% if form.project_type.errors %}<div class="text-danger small mt-1">{{ form.project_type.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Assigned Project Manager</label>
+              {{ form.assigned_manager }}
+              {% if form.assigned_manager.errors %}<div class="text-danger small mt-1">{{ form.assigned_manager.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          <!-- Section 2: Location & Client Details -->
+          <h5 class="font-heading fw-bold text-dark mb-3">2. Location &amp; Client Information</h5>
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">City / Location *</label>
+              {{ form.location }}
+              {% if form.location.errors %}<div class="text-danger small mt-1">{{ form.location.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Client / Property Owner *</label>
+              {{ form.client_name }}
+              {% if form.client_name.errors %}<div class="text-danger small mt-1">{{ form.client_name.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Client Contact Info</label>
+              {{ form.client_contact }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Full Site Address</label>
+              {{ form.address }}
+            </div>
+          </div>
+
+          <!-- Section 3: Financial Budget & Timeline -->
+          <h5 class="font-heading fw-bold text-dark mb-3">3. Approved Budget &amp; Schedule</h5>
+          <div class="row g-3 mb-4">
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Approved Initial Budget (₹) *</label>
+              {{ form.approved_initial_budget }}
+              {% if form.approved_initial_budget.errors %}<div class="text-danger small mt-1">{{ form.approved_initial_budget.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Start Date *</label>
+              {{ form.start_date }}
+              {% if form.start_date.errors %}<div class="text-danger small mt-1">{{ form.start_date.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Expected Completion Date *</label>
+              {{ form.expected_completion_date }}
+              {% if form.expected_completion_date.errors %}<div class="text-danger small mt-1">{{ form.expected_completion_date.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Initial Status</label>
+              {{ form.status }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Current Progress (%)</label>
+              {{ form.progress_percentage }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Site Cover Image</label>
+              {{ form.cover_image }}
+            </div>
+          </div>
+
+          <!-- Section 4: Specifications & Scope -->
+          <h5 class="font-heading fw-bold text-dark mb-3">4. Scope of Work &amp; Remarks</h5>
+          <div class="mb-4">
+            {{ form.description }}
+          </div>
+
+          <div class="d-flex justify-content-end gap-3 pt-3 border-top">
+            <a href="{% url 'projects:project_list' %}" class="btn btn-outline-secondary px-4 py-2">Cancel</a>
+            <button type="submit" class="btn btn-hero-primary px-5 py-2">
+              <i class="bi bi-check-circle me-1"></i> Initialize Project Workspace
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}

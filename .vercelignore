@@ -1,0 +1,10 @@
+.env
+.env.example
+*.sqlite3
+media/
+private_media/
+__pycache__/
+*.pyc
+.pytest_cache/
+test_deletes.py
+.git/

@@ -1,31 +1,340 @@
 {% extends 'base.html' %}
+{% load currency_tags %}
 
-{% block title %}Projects - Nova Construct{% endblock %}
+{% block title %}Real Estate Construction Management &amp; Digital Work Diary - Nova Construct{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-      <span class="nova-eyebrow">PORTFOLIO OVERVIEW</span>
-      <h2 class="font-heading fw-bold mb-1">Construction Projects</h2>
-    </div>
-  </div>
-  <div class="row g-4">
-    {% for project in projects %}
-    <div class="col-md-6 col-lg-4">
-      <div class="nova-card p-4">
-        <h5>{{ project.name }}</h5>
-        <p class="text-muted small">{{ project.code }} - {{ project.location }}</p>
+<!-- ==========================================================================
+     CONSTRUCTION HERO SECTION (Pixel-Precise Nova Layout & Typography)
+     ========================================================================== -->
+<section class="nova-hero">
+  <div class="nova-container">
+    <div class="nova-hero-grid">
+      <!-- Left Column: Construction Operational Headline & Actions -->
+      <div class="nova-hero-content">
+        <span class="hero-eyebrow">CONSTRUCTION MANAGEMENT / SITE OPERATIONS / FINANCIAL CONTROL</span>
+        
+        <h1 class="hero-headline">
+          Every Project.<br>
+          Every Detail.<br>
+          Every Site.<br>
+          <span class="hero-highlight">Under Control.</span>
+        </h1>
+        
+        <p class="hero-description">
+          Manage construction projects, daily labour attendance, material procurement, payments, legal documents and site progress from one organised workspace.
+        </p>
+
+        <div class="hero-actions">
+          <a href="#portfolio-section" class="btn-hero-primary">
+            View Projects
+          </a>
+          
+          {% if user.can_manage_project %}
+          <a href="{% url 'projects:project_create' %}" class="btn-hero-secondary">
+            <i class="bi bi-plus-circle me-1"></i> Add New Project
+          </a>
+          {% else %}
+          <a href="#about-section" class="btn-hero-secondary">
+            Explore Capabilities
+          </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Right Column: Architectural Site Silhouette Asset -->
+      <div class="hero-image-wrapper">
+        <img src="/static/images/hero-person.png" alt="Construction project director at workspace" class="hero-image-blob">
       </div>
     </div>
-    {% empty %}
-    <div class="col-12">
-      <div class="nova-card p-5 text-center text-muted">
-        <i class="bi bi-building fs-1 mb-2"></i>
-        <p>No construction projects registered yet.</p>
+  </div>
+</section>
+
+<!-- ==========================================================================
+     ACTIVE CONSTRUCTION PORTFOLIO SECTION
+     ========================================================================== -->
+<section id="portfolio-section" class="py-5">
+  <div class="nova-container">
+
+    <!-- Section Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+      <div>
+        <span class="hero-eyebrow mb-1">CENTRALIZED PORTFOLIO &bull; REAL-TIME METRICS</span>
+        <h2 class="font-heading fw-bold fs-2 mb-1">Active Construction Portfolio</h2>
+        <p class="text-muted small mb-0">
+          Monitor ongoing construction projects, track labour and procurement costs, review outstanding payments, and maintain a complete daily record of work across all sites.
+        </p>
+      </div>
+      <div>
+        {% if user.can_manage_project %}
+        <a href="{% url 'projects:project_create' %}" class="btn btn-hero-primary py-2 px-3 small">
+          <i class="bi bi-plus-circle me-1"></i> Add New Project
+        </a>
+        {% endif %}
       </div>
     </div>
-    {% endfor %}
+
+    <!-- Portfolio Statistics Summary Banner (Real DB Aggregations in INR) -->
+    <div class="nova-card mb-4 p-3 p-md-4">
+      <div class="row g-3 text-center text-md-start">
+        <div class="col-6 col-md-3 nova-stat-block border-end-md">
+          <div class="nova-stat-number">{{ total_projects }}</div>
+          <div class="nova-stat-label"><i class="bi bi-collection me-1"></i> Total Sites</div>
+        </div>
+        <div class="col-6 col-md-3 nova-stat-block border-end-md">
+          <div class="nova-stat-number text-success">{{ active_count }}</div>
+          <div class="nova-stat-label"><i class="bi bi-hammer me-1"></i> Active Construction</div>
+        </div>
+        <div class="col-6 col-md-3 nova-stat-block border-end-md">
+          <div class="nova-stat-number text-primary">{{ total_budget|inr_format }}</div>
+          <div class="nova-stat-label"><i class="bi bi-cash-stack me-1"></i> Portfolio Budget (INR)</div>
+        </div>
+        <div class="col-6 col-md-3 nova-stat-block">
+          <div class="nova-stat-number text-warning">{{ avg_progress }}%</div>
+          <div class="nova-stat-label"><i class="bi bi-speedometer2 me-1"></i> Avg Progress</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter & Search Toolbar -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+      <form method="get" class="d-flex flex-wrap align-items-center gap-2 flex-grow-1" id="filterForm">
+        <div class="input-group" style="max-width: 320px; min-width: 220px;">
+          <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+          <input type="text" name="q" class="form-control nova-input border-start-0" placeholder="Search project name, code, city..." value="{{ search_query }}">
+        </div>
+
+        <select name="status" class="form-select nova-input w-auto" onchange="this.form.submit()">
+          <option value="">All Statuses</option>
+          {% for st_val, st_label in status_choices %}
+          <option value="{{ st_val }}" {% if selected_status == st_val %}selected{% endif %}>{{ st_label }}</option>
+          {% endfor %}
+        </select>
+
+        <select name="sort" class="form-select nova-input w-auto" onchange="this.form.submit()">
+          <option value="recent" {% if selected_sort == 'recent' %}selected{% endif %}>Recently Updated</option>
+          <option value="progress_desc" {% if selected_sort == 'progress_desc' %}selected{% endif %}>Progress (High to Low)</option>
+          <option value="progress_asc" {% if selected_sort == 'progress_asc' %}selected{% endif %}>Progress (Low to High)</option>
+          <option value="budget_desc" {% if selected_sort == 'budget_desc' %}selected{% endif %}>Budget (Highest First)</option>
+          <option value="name" {% if selected_sort == 'name' %}selected{% endif %}>Name (A-Z)</option>
+        </select>
+
+        {% if search_query or selected_status %}
+        <a href="{% url 'projects:project_list' %}" class="btn btn-outline-secondary btn-sm py-2">
+          <i class="bi bi-x-circle me-1"></i> Reset Filters
+        </a>
+        {% endif %}
+      </form>
+
+      <div class="text-muted small">
+        Showing <strong>{{ projects|length }}</strong> project{% if projects|length != 1 %}s{% endif %}
+      </div>
+    </div>
+
+    <!-- Architectural Construction Project Cards Grid -->
+    <div class="row g-4 mb-5">
+      {% for project in projects %}
+      <div class="col-md-6 col-lg-4">
+        <div class="nova-card nova-card-hover h-100 d-flex flex-column">
+          <!-- Card Image Header -->
+          <div class="position-relative overflow-hidden" style="height: 210px; background: linear-gradient(135deg, #18233c 0%, #0d1527 100%);">
+            {% if project.cover_image %}
+              <img src="{{ project.cover_image.url }}" alt="{{ project.name }}" class="w-100 h-100 object-fit-cover">
+            {% else %}
+              <div class="w-100 h-100 d-flex flex-column justify-content-center align-items-center text-white px-4 text-center" style="background: linear-gradient(135deg, #1a2536 0%, #0d1527 100%);">
+                <i class="bi bi-buildings fs-1 text-warning opacity-75 mb-2"></i>
+                <span class="font-heading fw-bold tracking-wider fs-5">{{ project.name }}</span>
+                <span class="small text-white-50">{{ project.project_type }}</span>
+              </div>
+            {% endif %}
+            
+            <div class="position-absolute top-0 end-0 m-3">
+              {% if project.status == 'ACTIVE' %}
+                <span class="nova-badge nova-badge-active"><i class="bi bi-dot fs-5"></i> Active Construction</span>
+              {% elif project.status == 'PLANNING' %}
+                <span class="nova-badge nova-badge-planning"><i class="bi bi-clock me-1"></i> Planning</span>
+              {% elif project.status == 'ON_HOLD' %}
+                <span class="nova-badge nova-badge-hold"><i class="bi bi-pause-circle me-1"></i> On Hold</span>
+              {% else %}
+                <span class="nova-badge nova-badge-completed"><i class="bi bi-check-circle me-1"></i> Completed</span>
+              {% endif %}
+            </div>
+
+            <div class="position-absolute bottom-0 start-0 m-3">
+              <span class="badge bg-dark bg-opacity-75 text-white font-monospace px-2 py-1">{{ project.code }}</span>
+            </div>
+          </div>
+
+          <!-- Card Body -->
+          <div class="p-4 flex-grow-1 d-flex flex-column justify-content-between">
+            <div>
+              <h4 class="font-heading fw-bold mb-1 fs-5">
+                <a href="{% url 'projects:project_detail' project.pk %}" class="text-decoration-none text-dark stretched-link">
+                  {{ project.name }}
+                </a>
+              </h4>
+              <div class="text-muted small mb-2">
+                <i class="bi bi-geo-alt me-1 text-secondary"></i> {{ project.location }}
+              </div>
+              <div class="text-muted small mb-3">
+                <i class="bi bi-building me-1"></i> Client: <strong class="text-dark">{{ project.client_name }}</strong>
+              </div>
+
+              <!-- Financial Metrics Grid (In INR with Indian grouping) -->
+              <div class="bg-light rounded-3 p-3 mb-3 border">
+                <div class="row g-2 text-center mb-2">
+                  <div class="col-6 border-end">
+                    <div class="text-muted" style="font-size: 0.68rem; font-weight: 600;">APPROVED BUDGET</div>
+                    <div class="fw-bold text-dark small">{{ project.approved_initial_budget|inr_format }}</div>
+                  </div>
+                  <div class="col-6">
+                    <div class="text-muted" style="font-size: 0.68rem; font-weight: 600;">RECORDED EXPENSE</div>
+                    <div class="fw-bold text-danger small">{{ project.get_recorded_expenditure|inr_format }}</div>
+                  </div>
+                </div>
+                <div class="row g-2 text-center pt-2 border-top">
+                  <div class="col-4 border-end">
+                    <div class="text-muted" style="font-size: 0.65rem; font-weight: 600;">PAID</div>
+                    <div class="fw-bold text-success" style="font-size: 0.76rem;">{{ project.get_amount_paid|inr_format }}</div>
+                  </div>
+                  <div class="col-4 border-end">
+                    <div class="text-muted" style="font-size: 0.65rem; font-weight: 600;">DUES</div>
+                    <div class="fw-bold text-warning" style="font-size: 0.76rem;">{{ project.get_outstanding_liabilities|inr_format }}</div>
+                  </div>
+                  <div class="col-4">
+                    <div class="text-muted" style="font-size: 0.65rem; font-weight: 600;">REMAINING</div>
+                    <div class="fw-bold text-primary" style="font-size: 0.76rem;">{{ project.get_remaining_budget|inr_format }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Progress Bar -->
+              <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center small mb-1">
+                  <span class="text-muted fw-semibold">Construction Completion</span>
+                  <span class="fw-bold text-dark">{{ project.progress_percentage }}%</span>
+                </div>
+                <div class="progress" style="height: 6px;">
+                  <div class="progress-bar bg-warning" role="progressbar" style="width: {{ project.progress_percentage }}%;" aria-valuenow="{{ project.progress_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer Details -->
+            <div class="pt-3 border-top d-flex justify-content-between align-items-center small text-muted position-relative z-2">
+              <div>
+                <i class="bi bi-person-badge me-1"></i> PM: <strong class="text-dark">{{ project.get_project_manager.get_full_name|default:project.get_project_manager.username|default:"Unassigned" }}</strong>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                {% if user.can_manage_project %}
+                <a href="{% url 'projects:project_settings' project.pk %}" class="btn btn-outline-secondary btn-sm py-0 px-2" title="Project Settings &amp; Governance">
+                  <i class="bi bi-gear"></i>
+                </a>
+                {% endif %}
+                <a href="{% url 'projects:project_detail' project.pk %}" class="text-dark fw-bold text-decoration-none">
+                  Workspace <i class="bi bi-arrow-up-right text-warning ms-1"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12">
+        <div class="nova-card p-5 text-center">
+          <i class="bi bi-buildings text-muted" style="font-size: 3rem;"></i>
+          <h4 class="font-heading fw-bold mt-3 mb-2">No Matching Construction Projects</h4>
+          <p class="text-muted small mb-4">Try clearing your filters or create a new project workspace.</p>
+          {% if user.can_manage_project %}
+          <a href="{% url 'projects:project_create' %}" class="btn-hero-primary py-2 px-4">
+            <i class="bi bi-plus-circle me-1"></i> Add New Project
+          </a>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
   </div>
-</div>
+</section>
+
+<!-- ==========================================================================
+     ABOUT NOVA CONSTRUCT SECTION
+     ========================================================================== -->
+<section id="about-section" class="py-5 bg-white border-top">
+  <div class="nova-container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <span class="hero-eyebrow mb-1">ABOUT NOVA CONSTRUCT</span>
+        <h2 class="font-heading fw-bold display-6 mb-3">Construction Operations, Organised in One Place</h2>
+        <p class="text-muted mb-4 fs-6 leading-relaxed">
+          NOVA CONSTRUCT provides a centralised digital workspace for real estate contractors to manage construction projects, maintain daily labour registers, monitor material purchases, track payments and outstanding bills, store legal documents, and record site progress with dated photographs.
+        </p>
+        <div class="d-flex gap-3">
+          <a href="#portfolio-section" class="btn-hero-primary py-2 px-4">
+            Explore Projects
+          </a>
+        </div>
+      </div>
+      
+      <div class="col-lg-6" id="operations-section">
+        <div class="nova-card p-4 p-md-5 bg-light">
+          <h4 class="font-heading fw-bold mb-4">
+            <i class="bi bi-shield-check text-warning me-2"></i> Built for Real Construction Operations
+          </h4>
+          <ul class="list-unstyled d-flex flex-column gap-3 text-muted small mb-0">
+            <li class="d-flex align-items-start gap-2">
+              <i class="bi bi-check-circle-fill text-success fs-6 mt-1"></i>
+              <span><strong>Project-wise daily labour attendance and wage records</strong> with gang overtime and dues settlement.</span>
+            </li>
+            <li class="d-flex align-items-start gap-2">
+              <i class="bi bi-check-circle-fill text-success fs-6 mt-1"></i>
+              <span><strong>Material procurement, supplier invoices and payment tracking</strong> with partial settlement management.</span>
+            </li>
+            <li class="d-flex align-items-start gap-2">
+              <i class="bi bi-check-circle-fill text-success fs-6 mt-1"></i>
+              <span><strong>Centralised financial ledger and project budget monitoring</strong> in Indian Rupees (₹ INR).</span>
+            </li>
+            <li class="d-flex align-items-start gap-2">
+              <i class="bi bi-check-circle-fill text-success fs-6 mt-1"></i>
+              <span><strong>Secure legal and compliance document storage</strong> for municipal sanctions, RERA, and Fire NOCs.</span>
+            </li>
+            <li class="d-flex align-items-start gap-2">
+              <i class="bi bi-check-circle-fill text-success fs-6 mt-1"></i>
+              <span><strong>Daily construction photographs and site progress reports</strong> for photographic audit evidence.</span>
+            </li>
+            <li class="d-flex align-items-start gap-2">
+              <i class="bi bi-check-circle-fill text-success fs-6 mt-1"></i>
+              <span><strong>Weekly work plans, milestones and delay tracking</strong> across sub-structure and superstructure tasks.</span>
+            </li>
+            <li class="d-flex align-items-start gap-2">
+              <i class="bi bi-check-circle-fill text-success fs-6 mt-1"></i>
+              <span><strong>Supervisor accounts with project-specific QR access</strong> and instant timecard check-ins.</span>
+            </li>
+            <li class="d-flex align-items-start gap-2">
+              <i class="bi bi-check-circle-fill text-success fs-6 mt-1"></i>
+              <span><strong>Role-based permissions and financial audit trails</strong> across 7 operational disciplines.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==========================================================================
+     DIGITAL WORK DIARY ANCHOR SECTION
+     ========================================================================== -->
+<section id="workdiary-section" class="py-5 bg-light border-top">
+  <div class="nova-container text-center">
+    <span class="hero-eyebrow mb-1">DIGITAL WORK DIARY</span>
+    <h3 class="font-heading fw-bold mb-2">Centralized Construction Diary Across All Sites</h3>
+    <p class="text-muted small mx-auto mb-4" style="max-width: 650px;">
+      Empower site supervisors and project managers to record daily muster rolls, verify deliveries against purchase orders, and document photographic progress directly from the field.
+    </p>
+    <a href="#portfolio-section" class="btn-hero-primary py-2 px-4">
+      Select Project to Open Diary
+    </a>
+  </div>
+</section>
 {% endblock %}

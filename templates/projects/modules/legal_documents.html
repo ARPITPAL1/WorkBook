@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+
+{% block title %}Legal &amp; Statutory Documents - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="nova-container py-4">
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{% url 'projects:project_list' %}" class="text-decoration-none text-muted">Portfolio</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'projects:project_detail' project.pk %}" class="text-decoration-none text-muted">{{ project.code }}</a></li>
+      <li class="breadcrumb-item active text-dark fw-bold" aria-current="page">Legal Documents</li>
+    </ol>
+  </nav>
+
+  {% include 'projects/components/project_tabs.html' %}
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <span class="hero-eyebrow mb-1">MODULE 05 &bull; STATUTORY &amp; COMPLIANCE</span>
+      <h2 class="font-heading fw-bold mb-1">Legal Documents Register</h2>
+      <p class="text-muted small mb-0">Secure private document repository, environmental clearances, municipal approvals, and renewals.</p>
+    </div>
+    <div>
+      <button class="btn nova-btn-primary btn-sm px-3" data-bs-toggle="modal" data-bs-target="#addLegalDocModal">
+        <i class="bi bi-file-earmark-plus me-1"></i> Upload Legal Document
+      </button>
+    </div>
+  </div>
+
+  <div class="nova-card p-4">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light small">
+          <tr>
+            <th>Document Title</th>
+            <th>Type</th>
+            <th>Reference No.</th>
+            <th>Issuing Authority</th>
+            <th>Issue Date</th>
+            <th>Expiry Date</th>
+            <th>Status</th>
+            <th>File</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for doc in documents %}
+          <tr>
+            <td class="fw-bold">
+              <i class="bi bi-file-earmark-pdf-fill text-danger me-2"></i> {{ doc.title }}
+            </td>
+            <td><span class="badge bg-light text-dark border">{{ doc.document_type }}</span></td>
+            <td class="font-monospace small">{{ doc.reference_number|default:"—" }}</td>
+            <td>{{ doc.issuing_authority|default:"—" }}</td>
+            <td class="small">{{ doc.issue_date|date:"d M Y"|default:"—" }}</td>
+            <td class="small">{{ doc.expiry_date|date:"d M Y"|default:"Indefinite" }}</td>
+            <td>
+              <span class="badge bg-success-subtle text-success border border-success px-2 py-1">{{ doc.status }}</span>
+            </td>
+            <td>
+              {% if doc.document_file %}
+                <a href="{{ doc.document_file.url }}" download class="btn btn-sm btn-outline-secondary" title="Download Document">
+                  <i class="bi bi-download"></i>
+                </a>
+              {% else %}
+                <span class="text-muted small">No file</span>
+              {% endif %}
+            </td>
+            <td class="text-end text-nowrap">
+              <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2 me-1" data-bs-toggle="modal" data-bs-target="#editLegalModal{{ doc.pk }}" title="Edit Document">
+                <i class="bi bi-pencil-square"></i>
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2" data-bs-toggle="modal" data-bs-target="#deleteLegalModal{{ doc.pk }}" title="Delete Document">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+
+          <!-- MODAL: Edit Legal Document {{ doc.pk }} -->
+          <div class="modal fade" id="editLegalModal{{ doc.pk }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content nova-card border-0">
+                <form method="POST" action="{% url 'projects:project_legal' project.pk %}" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="edit_document">
+                  <input type="hidden" name="doc_id" value="{{ doc.pk }}">
+                  <div class="modal-header border-bottom">
+                    <h5 class="modal-title font-heading fw-bold">
+                      <i class="bi bi-pencil-square text-primary me-2"></i> Edit Legal Document
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body p-4 text-start">
+                    <div class="mb-3">
+                      <label class="form-label small fw-bold">Document Title <span class="text-danger">*</span></label>
+                      <input type="text" name="title" class="form-control nova-input" value="{{ doc.title }}" required>
+                    </div>
+                    <div class="row g-2 mb-3">
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold">Document Type</label>
+                        <input type="text" name="document_type" class="form-control nova-input" value="{{ doc.document_type }}">
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold">Reference Number</label>
+                        <input type="text" name="reference_number" class="form-control nova-input" value="{{ doc.reference_number }}">
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label small fw-bold">Issuing Authority</label>
+                      <input type="text" name="issuing_authority" class="form-control nova-input" value="{{ doc.issuing_authority }}">
+                    </div>
+                    <div class="row g-2 mb-3">
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold">Issue Date</label>
+                        <input type="date" name="issue_date" class="form-control nova-input" value="{{ doc.issue_date|date:'Y-m-d' }}">
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold">Expiry Date</label>
+                        <input type="date" name="expiry_date" class="form-control nova-input" value="{{ doc.expiry_date|date:'Y-m-d' }}">
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label small fw-bold">Compliance Status</label>
+                      <input type="text" name="status" class="form-control nova-input" value="{{ doc.status }}">
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label small fw-bold">Replace File (Optional)</label>
+                      <input type="file" name="document_file" class="form-control nova-input">
+                      {% if doc.document_file %}
+                      <div class="form-text small">Current: <a href="{{ doc.document_file.url }}" target="_blank">View File</a></div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn nova-btn-primary btn-sm px-4">Update Document</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- MODAL: Delete Legal Document {{ doc.pk }} -->
+          <div class="modal fade" id="deleteLegalModal{{ doc.pk }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-danger text-white">
+                  <h5 class="modal-title font-heading fw-bold">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> Confirm Delete Legal Document
+                  </h5>
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="{% url 'projects:project_legal' project.pk %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="delete_document">
+                  <input type="hidden" name="doc_id" value="{{ doc.pk }}">
+                  <div class="modal-body p-4 text-start">
+                    <p class="mb-2">Are you sure you want to permanently delete <strong>{{ doc.title }}</strong>?</p>
+                    <div class="bg-light p-3 rounded-3 mb-3 border small">
+                      <div>Type: <strong>{{ doc.document_type|default:"Statutory" }}</strong> &bull; Ref: <strong>{{ doc.reference_number|default:"—" }}</strong></div>
+                      <div>Authority: {{ doc.issuing_authority|default:"—" }}</div>
+                      <div>Status: <strong>{{ doc.status }}</strong></div>
+                    </div>
+                    <div class="alert alert-warning small mb-0">
+                      <i class="bi bi-info-circle me-1"></i> This document and its associated file attachment will be permanently purged.
+                    </div>
+                  </div>
+                  <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger px-4">Delete Document</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% empty %}
+          <tr>
+            <td colspan="9" class="text-center py-5 text-muted">
+              <i class="bi bi-folder2-open fs-2 d-block mb-2 text-secondary"></i>
+              No legal or statutory documents uploaded for this project yet.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Upload Legal Document -->
+<div class="modal fade" id="addLegalDocModal" tabindex="-1" aria-labelledby="addLegalDocModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content nova-card border-0">
+      <form method="POST" action="{% url 'projects:project_legal' project.pk %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-header border-bottom">
+          <h5 class="modal-title font-heading fw-bold" id="addLegalDocModalLabel">
+            <i class="bi bi-shield-check text-primary me-2"></i> Upload Legal / Statutory Document
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Document Title <span class="text-danger">*</span></label>
+            {{ form.title }}
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Document Type</label>
+              {{ form.document_type }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Reference Number</label>
+              {{ form.reference_number }}
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Issuing Authority</label>
+            {{ form.issuing_authority }}
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Issue Date</label>
+              {{ form.issue_date }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Expiry Date</label>
+              {{ form.expiry_date }}
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Compliance Status</label>
+            {{ form.status }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Upload File (PDF / Scanned Document)</label>
+            {{ form.document_file }}
+          </div>
+        </div>
+        <div class="modal-footer border-top">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn nova-btn-primary btn-sm px-4">Upload Document</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

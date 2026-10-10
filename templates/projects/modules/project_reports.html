@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load currency_tags %}
+
+{% block title %}Reports &amp; Exports - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="nova-container py-4">
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{% url 'projects:project_list' %}" class="text-decoration-none text-muted">Portfolio</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'projects:project_detail' project.pk %}" class="text-decoration-none text-muted">{{ project.code }}</a></li>
+      <li class="breadcrumb-item active text-dark fw-bold" aria-current="page">Executive Reports</li>
+    </ol>
+  </nav>
+
+  {% include 'projects/components/project_tabs.html' %}
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <span class="hero-eyebrow mb-1">MODULE 09 &bull; AUDIT &amp; EXECUTIVE EXPORTS</span>
+      <h2 class="font-heading fw-bold mb-1">Project Reports &amp; Exports</h2>
+      <p class="text-muted small mb-0">Generate comprehensive project audits, labour expense reports, supplier balance sheets, and procurement summaries.</p>
+    </div>
+  </div>
+
+  <!-- Export Cards -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-6 col-lg-4">
+      <div class="nova-card p-4 h-100 d-flex flex-column justify-content-between">
+        <div>
+          <i class="bi bi-file-earmark-spreadsheet text-success fs-1 mb-3 d-block"></i>
+          <h5 class="font-heading fw-bold">Financial Ledger (CSV)</h5>
+          <p class="text-muted small">Export all double-entry ledger postings including debits, credits, journal adjustments, and supplier disbursements in INR.</p>
+        </div>
+        <a href="{% url 'projects:export_ledger_csv' project.pk %}"
+           class="btn nova-btn-primary w-100 mt-3"
+           id="exportLedgerBtn">
+          <i class="bi bi-download me-1"></i> Export Ledger CSV
+        </a>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <div class="nova-card p-4 h-100 d-flex flex-column justify-content-between">
+        <div>
+          <i class="bi bi-file-earmark-person text-primary fs-1 mb-3 d-block"></i>
+          <h5 class="font-heading fw-bold">Labour Muster Roll (CSV)</h5>
+          <p class="text-muted small">Full daily muster roll of worker gangs, gross wages (INR), overtime, paid and outstanding balances for payroll audit.</p>
+        </div>
+        <a href="{% url 'projects:export_labour_csv' project.pk %}"
+           class="btn nova-btn-primary w-100 mt-3"
+           id="exportLabourBtn">
+          <i class="bi bi-download me-1"></i> Export Labour CSV
+        </a>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <div class="nova-card p-4 h-100 d-flex flex-column justify-content-between">
+        <div>
+          <i class="bi bi-file-earmark-text text-warning fs-1 mb-3 d-block"></i>
+          <h5 class="font-heading fw-bold">Materials &amp; Invoices (CSV)</h5>
+          <p class="text-muted small">Export supplier invoices, purchase quantities, total INR amounts, paid amounts, outstanding balances, and payment status.</p>
+        </div>
+        <a href="{% url 'projects:export_materials_csv' project.pk %}"
+           class="btn nova-btn-primary w-100 mt-3"
+           id="exportMaterialsBtn">
+          <i class="bi bi-download me-1"></i> Export Materials CSV
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project Summary Snapshot -->
+  <div class="nova-card p-4">
+    <h5 class="font-heading fw-bold mb-3"><i class="bi bi-bar-chart-line text-primary me-2"></i> Executive Financial Snapshot</h5>
+    <div class="row g-3">
+      <div class="col-md-3">
+        <div class="bg-light rounded-3 p-3 text-center">
+          <div class="text-muted small">Approved Budget</div>
+          <div class="fs-6 fw-bold text-dark">{{ project.get_approved_budget|inr_format }}</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="bg-light rounded-3 p-3 text-center">
+          <div class="text-muted small">Actual Expenditure</div>
+          <div class="fs-6 fw-bold text-danger">{{ project.get_recorded_expenditure|inr_format }}</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="bg-light rounded-3 p-3 text-center">
+          <div class="text-muted small">Amount Paid (Settled)</div>
+          <div class="fs-6 fw-bold text-success">{{ project.get_amount_paid|inr_format }}</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="bg-light rounded-3 p-3 text-center">
+          <div class="text-muted small">Outstanding Liabilities</div>
+          <div class="fs-6 fw-bold text-warning">{{ project.get_outstanding_liabilities|inr_format }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="mt-3 p-3 bg-light rounded-3 small text-muted">
+      <i class="bi bi-info-circle me-1"></i>
+      All figures are in Indian Rupees (INR &#8377;). Exported CSV files include column headers and are compatible with Microsoft Excel, Google Sheets, and Tally ERP import.
+    </div>
+  </div>
+</div>
+{% endblock %}

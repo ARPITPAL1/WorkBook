@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% load currency_tags %}
+
+{% block title %}Project Settings - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="nova-container py-4">
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{% url 'projects:project_list' %}" class="text-decoration-none text-muted">Portfolio</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'projects:project_detail' project.pk %}" class="text-decoration-none text-muted">{{ project.code }}</a></li>
+      <li class="breadcrumb-item active text-dark fw-bold" aria-current="page">Project Settings</li>
+    </ol>
+  </nav>
+
+  {% include 'projects/components/project_tabs.html' %}
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <span class="hero-eyebrow mb-1">MODULE 10 &bull; GOVERNANCE &amp; CONFIGURATION</span>
+      <h2 class="font-heading fw-bold mb-1">Project Settings &amp; Parameters</h2>
+      <p class="text-muted small mb-0">Project baseline parameters, status updates, team assignment control, and lifecycle archiving.</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <!-- Edit Master Project Parameters -->
+      <div class="nova-card p-4 mb-4">
+        <h5 class="font-heading fw-bold mb-3 border-bottom pb-2">
+          <i class="bi bi-pencil-square text-primary me-2"></i> Edit Project Master Parameters
+        </h5>
+        <form method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="edit_project">
+          <div class="row g-3 mb-3">
+            <div class="col-md-8">
+              <label class="form-label small fw-bold">Project Name <span class="text-danger">*</span></label>
+              {{ project_edit_form.name }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Project Code <span class="text-danger">*</span></label>
+              {{ project_edit_form.code }}
+            </div>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Location / City <span class="text-danger">*</span></label>
+              {{ project_edit_form.location }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Client / Developer <span class="text-danger">*</span></label>
+              {{ project_edit_form.client_name }}
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Site Address</label>
+            {{ project_edit_form.address }}
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Project Type</label>
+              {{ project_edit_form.project_type }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Approved Budget (INR ₹) <span class="text-danger">*</span></label>
+              {{ project_edit_form.approved_initial_budget }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Currency</label>
+              {{ project_edit_form.currency }}
+            </div>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Start Date <span class="text-danger">*</span></label>
+              {{ project_edit_form.start_date }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Expected Completion <span class="text-danger">*</span></label>
+              {{ project_edit_form.expected_completion_date }}
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Site Description</label>
+            {{ project_edit_form.description }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Cover Photo / Architectural Render</label>
+            {{ project_edit_form.cover_image }}
+            {% if project.cover_image %}
+              <div class="form-text small">Current: <a href="{{ project.cover_image.url }}" target="_blank">View Cover</a></div>
+            {% endif %}
+          </div>
+          <button type="submit" class="btn btn-hero-primary mt-2">
+            <i class="bi bi-check2-circle me-1"></i> Update Project Baseline
+          </button>
+        </form>
+      </div>
+
+      <!-- Operational Status & Progress -->
+      <div class="nova-card p-4">
+        <h5 class="font-heading fw-bold mb-3 border-bottom pb-2">
+          <i class="bi bi-sliders text-secondary me-2"></i> Operational Parameters
+        </h5>
+        <form method="POST">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="update_status">
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Current Project Status</label>
+            <select name="status" class="form-select nova-input w-auto">
+              {% for val, label in status_choices %}
+                <option value="{{ val }}" {% if project.status == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Reported Construction Progress (%)</label>
+            <input type="number" name="progress" class="form-control nova-input" style="max-width: 140px;" value="{{ project.progress_percentage }}" min="0" max="100">
+          </div>
+          <button type="submit" class="btn nova-btn-primary btn-sm mt-2 px-3">
+            <i class="bi bi-check2 me-1"></i> Update Status &amp; Progress
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="nova-card p-4 border-danger">
+        <h5 class="font-heading fw-bold text-danger mb-2">
+          <i class="bi bi-exclamation-triangle-fill me-1"></i> Danger Zone
+        </h5>
+        <p class="text-muted small mb-3">Archiving this project will freeze all new labour entries, material orders, and financial transactions.</p>
+        <button type="button" class="btn btn-outline-warning w-100 text-dark mb-4" data-bs-toggle="modal" data-bs-target="#archiveProjectModal">
+          <i class="bi bi-archive me-1"></i> Archive Construction Project
+        </button>
+
+        <hr class="my-3">
+
+        <h6 class="font-heading fw-bold text-danger mb-1">Permanent Project Deletion</h6>
+        <p class="text-muted small mb-3">Permanently delete this project along with all associated labour diaries, invoices, and documents. Only Company Administrators are authorised.</p>
+        <button type="button" class="btn btn-outline-danger w-100" data-bs-toggle="modal" data-bs-target="#deleteProjectModal" {% if not request.user.is_company_admin %}title="Requires Company Administrator privileges"{% endif %}>
+          <i class="bi bi-trash3-fill me-1"></i> Permanently Delete Project
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Archive Project -->
+<div class="modal fade" id="archiveProjectModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-warning text-dark">
+        <h5 class="modal-title font-heading fw-bold">
+          <i class="bi bi-archive me-2"></i> Archive Project: {{ project.code }}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="archive_project">
+        <div class="modal-body p-4 text-start">
+          <p class="mb-2">Are you sure you want to archive project <strong>{{ project.code }} &mdash; {{ project.name }}</strong>?</p>
+          <div class="alert alert-warning small mb-0">
+            <i class="bi bi-info-circle me-1"></i> Archiving freezes active work diaries, labour entries, material orders, and financial transactions. You can reactivate the project anytime.
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-warning px-4 text-dark fw-bold">Archive Project</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Permanently Delete Project -->
+<div class="modal fade" id="deleteProjectModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title font-heading fw-bold">
+          <i class="bi bi-exclamation-octagon-fill me-2"></i> PERMANENT ACTION: Delete Project
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="delete_project">
+        <div class="modal-body p-4 text-start">
+          <p class="mb-2">Are you absolutely sure you want to permanently delete <strong>{{ project.code }} ({{ project.name }})</strong>?</p>
+          <div class="bg-light p-3 rounded-3 mb-3 border small">
+            <div>Budget: <strong>{{ project.get_approved_budget|inr_format }}</strong></div>
+            <div>Recorded Costs: <strong>{{ project.get_recorded_expenditure|inr_format }}</strong></div>
+          </div>
+          <div class="alert alert-danger small mb-0">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i> <strong>This action CANNOT be undone.</strong> ALL associated labour diaries, invoices, financial records, drawings, and statutory documents will be permanently purged.
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger px-4">Permanently Delete</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

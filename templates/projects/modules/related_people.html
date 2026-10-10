@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+
+{% block title %}Related People &amp; Project Directory - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="nova-container py-4">
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{% url 'projects:project_list' %}" class="text-decoration-none text-muted">Portfolio</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'projects:project_detail' project.pk %}" class="text-decoration-none text-muted">{{ project.code }}</a></li>
+      <li class="breadcrumb-item active text-dark fw-bold" aria-current="page">Related People</li>
+    </ol>
+  </nav>
+
+  {% include 'projects/components/project_tabs.html' %}
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <span class="hero-eyebrow mb-1">MODULE 06 &bull; STAKEHOLDERS &amp; CONTACTS</span>
+      <h2 class="font-heading fw-bold mb-1">Related People &amp; Project Directory</h2>
+      <p class="text-muted small mb-0">Project owners, architects, structural consultants, labour contractors, and suppliers assigned to this site.</p>
+    </div>
+    <div>
+      <button class="btn nova-btn-primary btn-sm px-3" data-bs-toggle="modal" data-bs-target="#addContactModal">
+        <i class="bi bi-person-plus me-1"></i> Add Project Contact
+      </button>
+    </div>
+  </div>
+
+  <!-- System Users with Project Access -->
+  {% if memberships %}
+  <div class="nova-card p-4 mb-4">
+    <h5 class="font-heading fw-bold mb-3"><i class="bi bi-shield-lock text-primary me-2"></i> Authorised System Users</h5>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light small">
+          <tr>
+            <th>Name</th>
+            <th>System Role</th>
+            <th>Email</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in memberships %}
+          <tr>
+            <td>
+              <div class="fw-bold">{{ m.user.get_full_name|default:m.user.username }}</div>
+              <div class="text-muted small">{{ m.user.email }}</div>
+            </td>
+            <td><span class="badge bg-dark">{{ m.role }}</span></td>
+            <td class="small text-muted">{{ m.user.email }}</td>
+            <td>
+              {% if m.is_active %}
+                <span class="badge bg-success-subtle text-success border border-success">Active</span>
+              {% else %}
+                <span class="badge bg-secondary-subtle text-secondary border">Inactive</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- External Project Contacts -->
+  <div class="nova-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="font-heading fw-bold mb-0"><i class="bi bi-people text-primary me-2"></i> External Contacts &amp; Stakeholders</h5>
+      <span class="text-muted small">{{ contacts.count }} contact{% if contacts.count != 1 %}s{% endif %} registered</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light small">
+          <tr>
+            <th>Name</th>
+            <th>Role / Assignment</th>
+            <th>Company / Organisation</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for contact in contacts %}
+          <tr>
+            <td>
+              <div class="fw-bold">{{ contact.name }}</div>
+            </td>
+            <td><span class="badge bg-primary-subtle text-primary border border-primary">{{ contact.role_assignment }}</span></td>
+            <td>{{ contact.organization|default:"—" }}</td>
+            <td class="small">{{ contact.phone|default:"—" }}</td>
+            <td class="small">{{ contact.email|default:"—" }}</td>
+            <td class="text-end text-nowrap">
+              <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2 me-1" data-bs-toggle="modal" data-bs-target="#editContactModal{{ contact.pk }}" title="Edit Contact">
+                <i class="bi bi-pencil-square"></i>
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2" data-bs-toggle="modal" data-bs-target="#deleteContactModal{{ contact.pk }}" title="Remove Contact">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+
+          <!-- MODAL: Edit Project Contact {{ contact.pk }} -->
+          <div class="modal fade" id="editContactModal{{ contact.pk }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content nova-card border-0">
+                <form method="POST" action="{% url 'projects:project_people' project.pk %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="edit_contact">
+                  <input type="hidden" name="contact_id" value="{{ contact.pk }}">
+                  <div class="modal-header border-bottom">
+                    <h5 class="modal-title font-heading fw-bold">
+                      <i class="bi bi-pencil-square text-primary me-2"></i> Edit Contact Details
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body p-4 text-start">
+                    <div class="mb-3">
+                      <label class="form-label small fw-bold">Full Name <span class="text-danger">*</span></label>
+                      <input type="text" name="name" class="form-control nova-input" value="{{ contact.name }}" required>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label small fw-bold">Role / Assignment <span class="text-danger">*</span></label>
+                      <input type="text" name="role_assignment" class="form-control nova-input" value="{{ contact.role_assignment }}" required>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label small fw-bold">Company / Organisation</label>
+                      <input type="text" name="organization" class="form-control nova-input" value="{{ contact.organization }}">
+                    </div>
+                    <div class="row g-2 mb-3">
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold">Phone</label>
+                        <input type="text" name="phone" class="form-control nova-input" value="{{ contact.phone }}">
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold">Email Address</label>
+                        <input type="email" name="email" class="form-control nova-input" value="{{ contact.email }}">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn nova-btn-primary btn-sm px-4">Update Contact</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- MODAL: Delete Project Contact {{ contact.pk }} -->
+          <div class="modal fade" id="deleteContactModal{{ contact.pk }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-danger text-white">
+                  <h5 class="modal-title font-heading fw-bold">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> Confirm Remove Contact
+                  </h5>
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="{% url 'projects:project_people' project.pk %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="delete_contact">
+                  <input type="hidden" name="contact_id" value="{{ contact.pk }}">
+                  <div class="modal-body p-4 text-start">
+                    <p class="mb-2">Are you sure you want to remove <strong>{{ contact.name }}</strong> from this project?</p>
+                    <div class="bg-light p-3 rounded-3 mb-3 border small">
+                      <div>Role: <strong>{{ contact.role_assignment }}</strong> &bull; Company: <strong>{{ contact.organization|default:"—" }}</strong></div>
+                      {% if contact.phone %}<div>Phone: {{ contact.phone }}</div>{% endif %}
+                      {% if contact.email %}<div>Email: {{ contact.email }}</div>{% endif %}
+                    </div>
+                    <div class="alert alert-warning small mb-0">
+                      <i class="bi bi-info-circle me-1"></i> This stakeholder contact will be removed from the project directory.
+                    </div>
+                  </div>
+                  <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger px-4">Remove Contact</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="text-center py-5 text-muted">
+              <i class="bi bi-person-x fs-2 d-block mb-2 text-secondary"></i>
+              No external contacts have been added to this project yet.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add Project Contact -->
+<div class="modal fade" id="addContactModal" tabindex="-1" aria-labelledby="addContactModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content nova-card border-0">
+      <form method="POST" action="{% url 'projects:project_people' project.pk %}">
+        {% csrf_token %}
+        <div class="modal-header border-bottom">
+          <h5 class="modal-title font-heading fw-bold" id="addContactModalLabel">
+            <i class="bi bi-person-plus text-primary me-2"></i> Add Project Contact
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Full Name <span class="text-danger">*</span></label>
+            {{ form.name }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Role / Assignment <span class="text-danger">*</span></label>
+            {{ form.role_assignment }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Company / Organisation</label>
+            {{ form.organization }}
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Phone</label>
+              {{ form.phone }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Email Address</label>
+              {{ form.email }}
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-top">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn nova-btn-primary btn-sm px-4">Add Contact</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+
+{% block title %}Daily Site Diary - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="nova-container py-4">
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{% url 'projects:project_list' %}" class="text-decoration-none text-muted">Portfolio</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'projects:project_detail' project.pk %}" class="text-decoration-none text-muted">{{ project.code }}</a></li>
+      <li class="breadcrumb-item active text-dark fw-bold" aria-current="page">Daily Site Images</li>
+    </ol>
+  </nav>
+
+  {% include 'projects/components/project_tabs.html' %}
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <span class="hero-eyebrow mb-1">MODULE 07 &bull; DIGITAL WORK DIARY &amp; EVIDENCE</span>
+      <h2 class="font-heading fw-bold mb-1">Daily Site Images &amp; Progress Timeline</h2>
+      <p class="text-muted small mb-0">Chronological site diary, daily supervisor submissions, weather observations, and high-resolution progress photographs.</p>
+    </div>
+    <div>
+      <button class="btn nova-btn-primary btn-sm px-3" data-bs-toggle="modal" data-bs-target="#addDiaryModal">
+        <i class="bi bi-camera me-1"></i> Upload Daily Site Report
+      </button>
+    </div>
+  </div>
+
+  <!-- Diary Entries from DB -->
+  {% for entry in entries %}
+  <div class="nova-card p-4 mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-3 mb-3">
+      <div>
+        <span class="badge bg-dark font-monospace me-2">{{ entry.date|date:"Y-m-d" }}</span>
+        <strong class="text-dark">Day {{ entry.day_number }} &bull; {{ entry.title }}</strong>
+      </div>
+      <div class="d-flex align-items-center gap-2 small text-muted">
+        {% if entry.weather_condition %}
+          <i class="bi bi-cloud-sun me-1"></i> {{ entry.weather_condition }}
+          {% if entry.temperature_celsius %}, {{ entry.temperature_celsius }}&deg;C{% endif %} &bull;
+        {% endif %}
+        Supervisor: <strong>{{ entry.supervisor.get_full_name|default:entry.supervisor.username }}</strong>
+        &bull; <span class="badge bg-success">Submitted</span>
+        <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 ms-2" data-bs-toggle="modal" data-bs-target="#editDiaryModal{{ entry.pk }}" title="Edit Report">
+          <i class="bi bi-pencil-square"></i>
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" data-bs-toggle="modal" data-bs-target="#deleteDiaryModal{{ entry.pk }}" title="Delete Report">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Photos -->
+    {% if entry.photo_1 or entry.photo_2 or entry.photo_3 %}
+    <div class="row g-3 mb-3">
+      {% if entry.photo_1 %}
+      <div class="col-md-4">
+        <div class="rounded-3 overflow-hidden" style="height: 220px;">
+          <img src="{{ entry.photo_1.url }}" alt="{{ entry.photo_1_caption|default:'Site Photo' }}" class="w-100 h-100 object-fit-cover">
+        </div>
+        {% if entry.photo_1_caption %}
+        <div class="small text-muted mt-1 text-center">{{ entry.photo_1_caption }}</div>
+        {% endif %}
+      </div>
+      {% endif %}
+      {% if entry.photo_2 %}
+      <div class="col-md-4">
+        <div class="rounded-3 overflow-hidden" style="height: 220px;">
+          <img src="{{ entry.photo_2.url }}" alt="{{ entry.photo_2_caption|default:'Site Photo' }}" class="w-100 h-100 object-fit-cover">
+        </div>
+        {% if entry.photo_2_caption %}
+        <div class="small text-muted mt-1 text-center">{{ entry.photo_2_caption }}</div>
+        {% endif %}
+      </div>
+      {% endif %}
+      {% if entry.photo_3 %}
+      <div class="col-md-4">
+        <div class="rounded-3 overflow-hidden" style="height: 220px;">
+          <img src="{{ entry.photo_3.url }}" alt="{{ entry.photo_3_caption|default:'Site Photo' }}" class="w-100 h-100 object-fit-cover">
+        </div>
+        {% if entry.photo_3_caption %}
+        <div class="small text-muted mt-1 text-center">{{ entry.photo_3_caption }}</div>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+    {% else %}
+    <div class="row g-3 mb-3">
+      <div class="col-12">
+        <div class="rounded-3 bg-light p-4 text-center text-muted small">
+          <i class="bi bi-camera fs-3 d-block mb-2 text-secondary"></i>
+          No site photographs attached to this diary entry.
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Work Summary -->
+    {% if entry.work_summary %}
+    <div class="bg-light p-3 rounded-3 small">
+      <div class="fw-bold text-dark mb-1"><i class="bi bi-card-text me-1"></i> Site Log Summary:</div>
+      <p class="mb-0 text-secondary">{{ entry.work_summary }}</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- MODAL: Edit Daily Diary {{ entry.pk }} -->
+  <div class="modal fade" id="editDiaryModal{{ entry.pk }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content nova-card border-0">
+        <form method="POST" action="{% url 'projects:project_diary' project.pk %}" enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="edit_diary">
+          <input type="hidden" name="entry_id" value="{{ entry.pk }}">
+          <div class="modal-header border-bottom">
+            <h5 class="modal-title font-heading fw-bold">
+              <i class="bi bi-pencil-square text-primary me-2"></i> Edit Daily Site Report (Day {{ entry.day_number }})
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-4 text-start">
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <label class="form-label small fw-bold">Date <span class="text-danger">*</span></label>
+                <input type="date" name="date" class="form-control nova-input" value="{{ entry.date|date:'Y-m-d' }}" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-bold">Construction Day No.</label>
+                <input type="number" name="day_number" class="form-control nova-input" min="1" value="{{ entry.day_number }}" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-bold">Temperature (°C)</label>
+                <input type="number" name="temperature_celsius" class="form-control nova-input" value="{{ entry.temperature_celsius|default:'' }}">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Report Title <span class="text-danger">*</span></label>
+              <input type="text" name="title" class="form-control nova-input" value="{{ entry.title }}" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Weather Condition</label>
+              <input type="text" name="weather_condition" class="form-control nova-input" value="{{ entry.weather_condition|default:'' }}">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Work Summary &amp; Site Log <span class="text-danger">*</span></label>
+              <textarea name="work_summary" rows="3" class="form-control nova-input" required>{{ entry.work_summary }}</textarea>
+            </div>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label small fw-bold">Update Photo 1</label>
+                <input type="file" name="photo_1" class="form-control nova-input">
+                <input type="text" name="photo_1_caption" class="form-control nova-input mt-1" placeholder="Caption 1" value="{{ entry.photo_1_caption|default:'' }}">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-bold">Update Photo 2</label>
+                <input type="file" name="photo_2" class="form-control nova-input">
+                <input type="text" name="photo_2_caption" class="form-control nova-input mt-1" placeholder="Caption 2" value="{{ entry.photo_2_caption|default:'' }}">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-bold">Update Photo 3</label>
+                <input type="file" name="photo_3" class="form-control nova-input">
+                <input type="text" name="photo_3_caption" class="form-control nova-input mt-1" placeholder="Caption 3" value="{{ entry.photo_3_caption|default:'' }}">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer border-top">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn nova-btn-primary btn-sm px-4">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Delete Daily Diary {{ entry.pk }} -->
+  <div class="modal fade" id="deleteDiaryModal{{ entry.pk }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title font-heading fw-bold">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> Confirm Delete Site Report
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form method="POST" action="{% url 'projects:project_diary' project.pk %}">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="delete_diary">
+          <input type="hidden" name="entry_id" value="{{ entry.pk }}">
+          <div class="modal-body p-4 text-start">
+            <p class="mb-2">Are you sure you want to delete daily site diary report <strong>Day {{ entry.day_number }}: {{ entry.title }}</strong>?</p>
+            <div class="bg-light p-3 rounded-3 mb-3 border small">
+              <div>Date: <strong>{{ entry.date|date:"d M Y" }}</strong> &bull; Supervisor: <strong>{{ entry.supervisor.get_full_name|default:entry.supervisor.username }}</strong></div>
+              {% if entry.weather_condition %}<div>Weather: {{ entry.weather_condition }}</div>{% endif %}
+            </div>
+            <div class="alert alert-warning small mb-0">
+              <i class="bi bi-info-circle me-1"></i> This daily progress log and all uploaded site photographs will be permanently deleted.
+            </div>
+          </div>
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-danger px-4">Delete Report</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="nova-card p-5 text-center text-muted">
+    <i class="bi bi-camera-video-off fs-1 d-block mb-3 text-secondary"></i>
+    <h5 class="fw-bold text-dark">No Site Diary Entries Yet</h5>
+    <p class="small mb-3">No daily progress reports have been submitted for this project. Supervisors can submit daily site photos and work logs using the button above.</p>
+    <button class="btn nova-btn-primary btn-sm px-4" data-bs-toggle="modal" data-bs-target="#addDiaryModal">
+      <i class="bi bi-camera me-1"></i> Submit First Daily Report
+    </button>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Modal: Upload Daily Site Report -->
+<div class="modal fade" id="addDiaryModal" tabindex="-1" aria-labelledby="addDiaryModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content nova-card border-0">
+      <form method="POST" action="{% url 'projects:project_diary' project.pk %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-header border-bottom">
+          <h5 class="modal-title font-heading fw-bold" id="addDiaryModalLabel">
+            <i class="bi bi-camera text-primary me-2"></i> Submit Daily Site Progress Report
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Date <span class="text-danger">*</span></label>
+              {{ form.date }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Construction Day No.</label>
+              {{ form.day_number }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Temperature (°C)</label>
+              {{ form.temperature_celsius }}
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Report Title <span class="text-danger">*</span></label>
+            {{ form.title }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Weather Condition</label>
+            {{ form.weather_condition }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Work Summary &amp; Site Log <span class="text-danger">*</span></label>
+            {{ form.work_summary }}
+          </div>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Photo 1</label>
+              {{ form.photo_1 }}
+              <div class="mt-1">{{ form.photo_1_caption }}</div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Photo 2</label>
+              {{ form.photo_2 }}
+              <div class="mt-1">{{ form.photo_2_caption }}</div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Photo 3</label>
+              {{ form.photo_3 }}
+              <div class="mt-1">{{ form.photo_3_caption }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-top">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn nova-btn-primary btn-sm px-4">Submit Site Report</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+<!-- Project Sub-Navigation Tabs Strip (Responsive & Horizontally Confined) -->
+<nav class="project-tabs-wrapper" aria-label="Project operational modules">
+  <ul class="project-tabs-list">
+    <li>
+      <a class="project-tab-link {% if active_tab == 'overview' %}active{% endif %}" href="{% url 'projects:project_detail' project.pk %}">
+        <i class="bi bi-speedometer2"></i> Overview
+      </a>
+    </li>
+    <li>
+      <a class="project-tab-link {% if active_tab == 'labour' %}active{% endif %}" href="{% url 'projects:project_labour' project.pk %}">
+        <i class="bi bi-people"></i> Labour Diary
+      </a>
+    </li>
+    <li>
+      <a class="project-tab-link {% if active_tab == 'materials' %}active{% endif %}" href="{% url 'projects:project_materials' project.pk %}">
+        <i class="bi bi-box-seam"></i> Materials
+      </a>
+    </li>
+    <li>
+      <a class="project-tab-link {% if active_tab == 'finance' %}active{% endif %}" href="{% url 'projects:project_finance' project.pk %}">
+        <i class="bi bi-journal-text"></i> Finance
+      </a>
+    </li>
+    <li>
+      <a class="project-tab-link {% if active_tab == 'budget' %}active{% endif %}" href="{% url 'projects:project_budget' project.pk %}">
+        <i class="bi bi-pie-chart"></i> Budget
+      </a>
+    </li>
+    <li>
+      <a class="project-tab-link {% if active_tab == 'legal' %}active{% endif %}" href="{% url 'projects:project_legal' project.pk %}">
+        <i class="bi bi-file-earmark-lock"></i> Legal
+      </a>
+    </li>
+    <li>
+      <a class="project-tab-link {% if active_tab == 'people' %}active{% endif %}" href="{% url 'projects:project_people' project.pk %}">
+        <i class="bi bi-person-lines-fill"></i> People
+      </a>
+    </li>
+    <li>
+      <a class="project-tab-link {% if active_tab == 'diary' %}active{% endif %}" href="{% url 'projects:project_diary' project.pk %}">
+        <i class="bi bi-camera"></i> Daily Images
+      </a>
+    </li>
+    <li>
+      <a class="project-tab-link {% if active_tab == 'schedule' %}active{% endif %}" href="{% url 'projects:project_schedule' project.pk %}">
+        <i class="bi bi-calendar-week"></i> Work Plan
+      </a>
+    </li>
+    <li>
+      <a class="project-tab-link {% if active_tab == 'reports' %}active{% endif %}" href="{% url 'projects:project_reports' project.pk %}">
+        <i class="bi bi-bar-chart"></i> Reports
+      </a>
+    </li>
+    <li>
+      <a class="project-tab-link {% if active_tab == 'settings' %}active{% endif %}" href="{% url 'projects:project_settings' project.pk %}">
+        <i class="bi bi-gear"></i> Settings
+      </a>
+    </li>
+  </ul>
+</nav>

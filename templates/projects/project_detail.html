@@ -1,12 +1,355 @@
 {% extends 'base.html' %}
+{% load currency_tags %}
 
-{% block title %}Project Details - Nova Construct{% endblock %}
+{% block title %}{{ project.name }} ({{ project.code }}) - Workspace{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  <div class="nova-card p-4">
-    <h2>{{ project.name }} ({{ project.code }})</h2>
-    <p class="text-muted">{{ project.location }}</p>
+<div class="nova-container py-4">
+
+  <!-- Breadcrumbs Navigation -->
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{% url 'projects:project_list' %}" class="text-decoration-none text-muted">Portfolio</a></li>
+      <li class="breadcrumb-item active text-dark fw-bold" aria-current="page">{{ project.code }}</li>
+    </ol>
+  </nav>
+
+  <!-- Project Editorial Header Card -->
+  <div class="project-header-card">
+    <div class="project-header-grid">
+      <!-- Left Column: Identity & Metadata -->
+      <div class="p-4 p-md-5 d-flex flex-column justify-content-between">
+        <div>
+          <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+            <span class="badge bg-dark font-monospace px-2 py-1">{{ project.code }}</span>
+            <span class="badge bg-secondary opacity-75">{{ project.project_type }}</span>
+            <span class="badge bg-light text-dark border font-monospace">{{ project.currency }}</span>
+            {% if project.status == 'ACTIVE' %}
+              <span class="nova-badge nova-badge-active"><i class="bi bi-dot fs-5"></i> Active Construction</span>
+            {% elif project.status == 'PLANNING' %}
+              <span class="nova-badge nova-badge-planning">Planning &amp; Permits</span>
+            {% elif project.status == 'ON_HOLD' %}
+              <span class="nova-badge nova-badge-hold">On Hold</span>
+            {% else %}
+              <span class="nova-badge nova-badge-completed">Completed</span>
+            {% endif %}
+          </div>
+
+          <h1 class="display-6 font-heading fw-bold mb-2" style="word-break: break-word;">{{ project.name }}</h1>
+          <p class="text-muted fs-6 mb-3">
+            <i class="bi bi-geo-alt-fill text-danger me-1"></i> {{ project.location }}
+            {% if project.address %} &bull; {{ project.address }}{% endif %}
+          </p>
+          <p class="text-secondary small mb-4" style="max-width: 680px; word-break: break-word;">
+            {{ project.description|default:"Active multi-story construction site managed under enterprise safety and quality guidelines." }}
+          </p>
+        </div>
+
+        <!-- Project Meta Tags Grid -->
+        <div class="row g-3 pt-3 border-top small text-muted">
+          <div class="col-6 col-md-3">
+            <span class="text-uppercase tracking-wider fw-bold d-block" style="font-size: 0.7rem;">CLIENT / OWNER</span>
+            <strong class="text-dark d-block text-truncate" title="{{ project.client_name }}">{{ project.client_name }}</strong>
+          </div>
+          <div class="col-6 col-md-3">
+            <span class="text-uppercase tracking-wider fw-bold d-block" style="font-size: 0.7rem;">PROJECT MANAGER</span>
+            <strong class="text-dark d-block text-truncate">{{ project_manager.get_full_name|default:project_manager.username|default:"Unassigned" }}</strong>
+          </div>
+          <div class="col-6 col-md-3">
+            <span class="text-uppercase tracking-wider fw-bold d-block" style="font-size: 0.7rem;">START DATE</span>
+            <strong class="text-dark d-block">{{ project.start_date|date:"M d, Y" }}</strong>
+          </div>
+          <div class="col-6 col-md-3">
+            <span class="text-uppercase tracking-wider fw-bold d-block" style="font-size: 0.7rem;">COMPLETION</span>
+            <strong class="text-dark d-block">{{ project.expected_completion_date|date:"M d, Y" }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Physical Progress Gauge & Active Role -->
+      <div class="p-4 p-md-5 bg-light border-start d-flex flex-column justify-content-between">
+        <div>
+          <span class="hero-eyebrow mb-2">PHYSICAL PROGRESS</span>
+          <div class="d-flex align-items-baseline gap-2 mb-2">
+            <h2 class="display-5 font-heading fw-bold mb-0 text-dark">{{ project.progress_percentage }}%</h2>
+            <span class="text-muted small">Completed</span>
+          </div>
+          <div class="progress mb-3" style="height: 10px;">
+            <div class="progress-bar bg-warning" role="progressbar" style="width: {{ project.progress_percentage }}%;" aria-valuenow="{{ project.progress_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+          <div class="d-flex justify-content-between small text-muted">
+            <span>Milestone Status: Normal</span>
+            <span>Est. Burn: {{ burn_rate }}%</span>
+          </div>
+        </div>
+
+        <div class="pt-4 border-top mt-4">
+          <span class="hero-eyebrow mb-1">YOUR ACTIVE ROLE</span>
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-shield-lock-fill text-primary fs-4"></i>
+            <div>
+              <div class="fw-bold text-dark">{{ user_role|default:"Full Administrative Access" }}</div>
+              <div class="text-muted small">Server-side permissions enforced</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <!-- Operational Sub-Navigation Tabs Strip -->
+  {% include 'projects/components/project_tabs.html' %}
+
+  <!-- Responsive Financial Summary Grid in INR (No Card Clipping) -->
+  <div class="financial-grid">
+    <div class="financial-card">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <span class="text-muted small fw-semibold text-uppercase tracking-wider">Approved Budget</span>
+        <i class="bi bi-wallet2 text-primary fs-5"></i>
+      </div>
+      <div class="financial-card-val text-dark mb-1">{{ approved_budget|inr_format }}</div>
+      <div class="small text-muted">Baseline authorized allocation</div>
+    </div>
+
+    <div class="financial-card">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <span class="text-muted small fw-semibold text-uppercase tracking-wider">Recorded Expenditure</span>
+        <i class="bi bi-graph-up-arrow text-danger fs-5"></i>
+      </div>
+      <div class="financial-card-val text-danger mb-1">{{ recorded_expenditure|inr_format }}</div>
+      <div class="small text-muted">Recognized labour &amp; procurement</div>
+    </div>
+
+    <div class="financial-card">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <span class="text-muted small fw-semibold text-uppercase tracking-wider">Outstanding Dues</span>
+        <i class="bi bi-clock-history text-warning fs-5"></i>
+      </div>
+      <div class="financial-card-val text-warning mb-1">{{ outstanding_liabilities|inr_format }}</div>
+      <div class="small text-muted">Unsettled supplier &amp; wages</div>
+    </div>
+
+    <div class="financial-card">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <span class="text-muted small fw-semibold text-uppercase tracking-wider">Available Budget</span>
+        <i class="bi bi-check-circle text-success fs-5"></i>
+      </div>
+      <div class="financial-card-val text-success mb-1">{{ remaining_budget|inr_format }}</div>
+      <div class="small text-muted">Remaining allocation reserve</div>
+    </div>
+  </div>
+
+  <!-- Operational Workspace Navigation Modules (10 Core Sections) -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <span class="hero-eyebrow mb-1">OPERATIONAL WORKSPACE</span>
+      <h3 class="font-heading fw-bold mb-0">Project Management Modules</h3>
+    </div>
+  </div>
+
+  <div class="modules-grid">
+
+    <!-- 1. Labour Daily Diary -->
+    <div class="nova-card nova-card-hover p-4 d-flex flex-column justify-content-between position-relative">
+      <div>
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <span class="d-inline-flex p-3 rounded-3 bg-primary bg-opacity-10 text-primary">
+            <i class="bi bi-people fs-4"></i>
+          </span>
+          <span class="text-muted small font-monospace">MOD-01</span>
+        </div>
+        <h5 class="font-heading fw-bold mb-1">
+          <a href="{% url 'projects:project_labour' project.pk %}" class="text-decoration-none text-dark stretched-link">Labour Diary</a>
+        </h5>
+        <p class="text-muted small">Daily site muster roll, worker categories, wage calculations, overtime, and dues settlement.</p>
+      </div>
+      <div class="pt-3 border-top mt-3 d-flex justify-content-between align-items-center">
+        <span class="badge bg-light text-dark border">Attendance Register</span>
+        <span class="text-warning fw-bold small">Open <i class="bi bi-arrow-right"></i></span>
+      </div>
+    </div>
+
+    <!-- 2. Materials & Procurement Register -->
+    <div class="nova-card nova-card-hover p-4 d-flex flex-column justify-content-between position-relative">
+      <div>
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <span class="d-inline-flex p-3 rounded-3 bg-success bg-opacity-10 text-success">
+            <i class="bi bi-box-seam fs-4"></i>
+          </span>
+          <span class="text-muted small font-monospace">MOD-02</span>
+        </div>
+        <h5 class="font-heading fw-bold mb-1">
+          <a href="{% url 'projects:project_materials' project.pk %}" class="text-decoration-none text-dark stretched-link">Materials Register</a>
+        </h5>
+        <p class="text-muted small">Track purchase requests, orders, site delivery challans, supplier invoices, payments &amp; status.</p>
+      </div>
+      <div class="pt-3 border-top mt-3 d-flex justify-content-between align-items-center">
+        <span class="badge bg-light text-dark border">Supply Chain</span>
+        <span class="text-warning fw-bold small">Open <i class="bi bi-arrow-right"></i></span>
+      </div>
+    </div>
+
+    <!-- 3. Central Financial Ledger -->
+    <div class="nova-card nova-card-hover p-4 d-flex flex-column justify-content-between position-relative">
+      <div>
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <span class="d-inline-flex p-3 rounded-3 bg-danger bg-opacity-10 text-danger">
+            <i class="bi bi-journal-text fs-4"></i>
+          </span>
+          <span class="text-muted small font-monospace">MOD-03</span>
+        </div>
+        <h5 class="font-heading fw-bold mb-1">
+          <a href="{% url 'projects:project_finance' project.pk %}" class="text-decoration-none text-dark stretched-link">Finance &amp; Ledger</a>
+        </h5>
+        <p class="text-muted small">Consolidated double-entry ledger for actual expenses, cash disbursements, client advances, and audit reversals.</p>
+      </div>
+      <div class="pt-3 border-top mt-3 d-flex justify-content-between align-items-center">
+        <span class="badge bg-light text-dark border">Double Entry</span>
+        <span class="text-warning fw-bold small">Open <i class="bi bi-arrow-right"></i></span>
+      </div>
+    </div>
+
+    <!-- 4. Budget & Analytics -->
+    <div class="nova-card nova-card-hover p-4 d-flex flex-column justify-content-between position-relative">
+      <div>
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <span class="d-inline-flex p-3 rounded-3 bg-warning bg-opacity-10 text-warning">
+            <i class="bi bi-pie-chart fs-4"></i>
+          </span>
+          <span class="text-muted small font-monospace">MOD-04</span>
+        </div>
+        <h5 class="font-heading fw-bold mb-1">
+          <a href="{% url 'projects:project_budget' project.pk %}" class="text-decoration-none text-dark stretched-link">Budget Allocation</a>
+        </h5>
+        <p class="text-muted small">Live database Chart.js breakdowns: labour vs materials, planned vs actual variance, and category revisions.</p>
+      </div>
+      <div class="pt-3 border-top mt-3 d-flex justify-content-between align-items-center">
+        <span class="badge bg-light text-dark border">Interactive Charts</span>
+        <span class="text-warning fw-bold small">Open <i class="bi bi-arrow-right"></i></span>
+      </div>
+    </div>
+
+    <!-- 5. Legal & Statutory Documents -->
+    <div class="nova-card nova-card-hover p-4 d-flex flex-column justify-content-between position-relative">
+      <div>
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <span class="d-inline-flex p-3 rounded-3 bg-info bg-opacity-10 text-info">
+            <i class="bi bi-file-earmark-lock fs-4"></i>
+          </span>
+          <span class="text-muted small font-monospace">MOD-05</span>
+        </div>
+        <h5 class="font-heading fw-bold mb-1">
+          <a href="{% url 'projects:project_legal' project.pk %}" class="text-decoration-none text-dark stretched-link">Legal Documents</a>
+        </h5>
+        <p class="text-muted small">Private compliance repository, municipal sanctions, Fire NOCs, environmental clearances, and renewal tracking.</p>
+      </div>
+      <div class="pt-3 border-top mt-3 d-flex justify-content-between align-items-center">
+        <span class="badge bg-light text-dark border">Encrypted Storage</span>
+        <span class="text-warning fw-bold small">Open <i class="bi bi-arrow-right"></i></span>
+      </div>
+    </div>
+
+    <!-- 6. Related People & Stakeholders -->
+    <div class="nova-card nova-card-hover p-4 d-flex flex-column justify-content-between position-relative">
+      <div>
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <span class="d-inline-flex p-3 rounded-3 bg-dark bg-opacity-10 text-dark">
+            <i class="bi bi-person-lines-fill fs-4"></i>
+          </span>
+          <span class="text-muted small font-monospace">MOD-06</span>
+        </div>
+        <h5 class="font-heading fw-bold mb-1">
+          <a href="{% url 'projects:project_people' project.pk %}" class="text-decoration-none text-dark stretched-link">Related People</a>
+        </h5>
+        <p class="text-muted small">Project directory: clients, principal architects, structural consultants, labour contractors, and assigned team.</p>
+      </div>
+      <div class="pt-3 border-top mt-3 d-flex justify-content-between align-items-center">
+        <span class="badge bg-light text-dark border">Stakeholder Directory</span>
+        <span class="text-warning fw-bold small">Open <i class="bi bi-arrow-right"></i></span>
+      </div>
+    </div>
+
+    <!-- 7. Daily Site Images & Timeline Diary -->
+    <div class="nova-card nova-card-hover p-4 d-flex flex-column justify-content-between position-relative">
+      <div>
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <span class="d-inline-flex p-3 rounded-3 bg-secondary bg-opacity-10 text-secondary">
+            <i class="bi bi-camera fs-4"></i>
+          </span>
+          <span class="text-muted small font-monospace">MOD-07</span>
+        </div>
+        <h5 class="font-heading fw-bold mb-1">
+          <a href="{% url 'projects:project_diary' project.pk %}" class="text-decoration-none text-dark stretched-link">Daily Site Images</a>
+        </h5>
+        <p class="text-muted small">Photographic timeline, floor-wise progress logs, supervisor submissions, and daily work observations.</p>
+      </div>
+      <div class="pt-3 border-top mt-3 d-flex justify-content-between align-items-center">
+        <span class="badge bg-light text-dark border">Visual Evidence</span>
+        <span class="text-warning fw-bold small">Open <i class="bi bi-arrow-right"></i></span>
+      </div>
+    </div>
+
+    <!-- 8. Work Plan & Scheduling -->
+    <div class="nova-card nova-card-hover p-4 d-flex flex-column justify-content-between position-relative">
+      <div>
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <span class="d-inline-flex p-3 rounded-3 bg-primary bg-opacity-10 text-primary">
+            <i class="bi bi-calendar-week fs-4"></i>
+          </span>
+          <span class="text-muted small font-monospace">MOD-08</span>
+        </div>
+        <h5 class="font-heading fw-bold mb-1">
+          <a href="{% url 'projects:project_schedule' project.pk %}" class="text-decoration-none text-dark stretched-link">Work Plan &amp; Schedule</a>
+        </h5>
+        <p class="text-muted small">Weekly objectives, milestone schedules, dependency monitoring, structural completion, and delay tracking.</p>
+      </div>
+      <div class="pt-3 border-top mt-3 d-flex justify-content-between align-items-center">
+        <span class="badge bg-light text-dark border">Gantt &amp; Milestones</span>
+        <span class="text-warning fw-bold small">Open <i class="bi bi-arrow-right"></i></span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Team Assignments on this Project Table -->
+  <div class="nova-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+      <h5 class="font-heading fw-bold mb-0">Project Team &amp; Assignments</h5>
+      <span class="badge bg-light text-dark border">{{ memberships|length }} Members Assigned</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light small">
+          <tr>
+            <th>Member</th>
+            <th>Role</th>
+            <th>Organization</th>
+            <th>Email</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for mem in memberships %}
+          <tr>
+            <td>
+              <div class="fw-bold">{{ mem.user.get_full_name|default:mem.user.username }}</div>
+              <div class="small text-muted">@{{ mem.user.username }}</div>
+            </td>
+            <td><span class="badge bg-dark">{{ mem.get_role_display }}</span></td>
+            <td>{{ mem.user.organization|default:"Nova Enterprise" }}</td>
+            <td>{{ mem.user.email|default:"-" }}</td>
+            <td><span class="badge bg-success">Active</span></td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-center py-3 text-muted">No specific team assignments registered yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </div>
 {% endblock %}

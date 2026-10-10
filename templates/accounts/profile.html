@@ -3,12 +3,12 @@
 {% block title %}My Profile - Nova Construct{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-  <div class="row">
-    <div class="col-lg-4 mb-4">
+<div class="nova-container py-5">
+  <div class="row g-4">
+    <div class="col-lg-4">
       <div class="nova-card p-4 text-center">
-        <div class="d-inline-flex align-items-center justify-center rounded-circle bg-light border p-4 mb-3">
-          <i class="bi bi-person text-secondary" style="font-size: 3.5rem;"></i>
+        <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-light border p-4 mb-3" style="width: 90px; height: 90px;">
+          <i class="bi bi-person text-secondary" style="font-size: 2.75rem;"></i>
         </div>
         <h4 class="font-heading fw-bold mb-1">{{ user.get_full_name|default:user.username }}</h4>
         <div class="badge bg-dark mb-2">{{ user.get_primary_role_display }}</div>
@@ -45,7 +45,7 @@
             </div>
           </div>
           <div class="mt-4">
-            <button type="submit" class="btn btn-nova-primary">
+            <button type="submit" class="btn btn-hero-primary py-2 px-4">
               <i class="bi bi-check2 me-1"></i> Save Changes
             </button>
           </div>
@@ -74,7 +74,7 @@
                 <td><span class="badge bg-primary">{{ mem.get_role_display }}</span></td>
                 <td><span class="badge bg-success">Active</span></td>
                 <td>
-                  <a href="{% url 'projects:project_detail' mem.project.pk %}" class="btn btn-sm btn-nova-outline">
+                  <a href="{% url 'projects:project_detail' mem.project.pk %}" class="btn btn-sm btn-outline-secondary">
                     Open Workspace <i class="bi bi-arrow-right ms-1"></i>
                   </a>
                 </td>

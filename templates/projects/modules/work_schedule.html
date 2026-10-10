@@ -1,0 +1,290 @@
+{% extends 'base.html' %}
+
+{% block title %}Work Plan &amp; Schedule - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="nova-container py-4">
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{% url 'projects:project_list' %}" class="text-decoration-none text-muted">Portfolio</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'projects:project_detail' project.pk %}" class="text-decoration-none text-muted">{{ project.code }}</a></li>
+      <li class="breadcrumb-item active text-dark fw-bold" aria-current="page">Work Plan &amp; Schedule</li>
+    </ol>
+  </nav>
+
+  {% include 'projects/components/project_tabs.html' %}
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <span class="hero-eyebrow mb-1">MODULE 08 &bull; MILESTONES &amp; GANTT SCHEDULING</span>
+      <h2 class="font-heading fw-bold mb-1">Weekly Work Plan &amp; Milestone Tracking</h2>
+      <p class="text-muted small mb-0">Monitor planned vs actual structural completion, task dependencies, supervisor assignments, and delay mitigations.</p>
+    </div>
+    <div>
+      <button class="btn nova-btn-primary btn-sm px-3" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+        <i class="bi bi-calendar-plus me-1"></i> Add Work Task
+      </button>
+    </div>
+  </div>
+
+  <!-- Task Summary Badges -->
+  {% if tasks %}
+  <div class="row g-3 mb-4">
+    <div class="col-auto">
+      <div class="nova-card px-3 py-2 small">
+        <i class="bi bi-list-check text-primary me-1"></i>
+        Total Tasks: <strong>{{ tasks.count }}</strong>
+      </div>
+    </div>
+    <div class="col-auto">
+      <div class="nova-card px-3 py-2 small">
+        <i class="bi bi-check-circle text-success me-1"></i>
+        Completed: <strong>{{ tasks|length }}</strong>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="nova-card p-4">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light small">
+          <tr>
+            <th>Milestone / Task</th>
+            <th>Work Area</th>
+            <th>Supervisor</th>
+            <th>Planned Dates</th>
+            <th>Progress</th>
+            <th>Delay / Notes</th>
+            <th>Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for task in tasks %}
+          <tr>
+            <td class="fw-bold">
+              {% if task.status == 'Completed' %}
+                <i class="bi bi-check-circle-fill text-success me-2"></i>
+              {% elif task.status == 'In Progress' %}
+                <i class="bi bi-building text-warning me-2"></i>
+              {% elif task.status == 'Delayed' %}
+                <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>
+              {% else %}
+                <i class="bi bi-layers-fill text-primary me-2"></i>
+              {% endif %}
+              {{ task.title }}
+            </td>
+            <td class="small">{{ task.work_area|default:"—" }}</td>
+            <td class="small">{{ task.supervisor.get_full_name|default:task.supervisor.username }}</td>
+            <td class="small">
+              {% if task.start_date %}{{ task.start_date|date:"d M" }}{% endif %}
+              {% if task.start_date and task.target_date %} – {% endif %}
+              {% if task.target_date %}{{ task.target_date|date:"d M Y" }}{% endif %}
+            </td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="progress flex-grow-1" style="height: 6px; min-width: 80px;">
+                  <div class="progress-bar
+                    {% if task.progress_percentage == 100 %}bg-success
+                    {% elif task.status == 'Delayed' %}bg-danger
+                    {% else %}bg-warning{% endif %}"
+                    style="width: {{ task.progress_percentage }}%;">
+                  </div>
+                </div>
+                <span class="small fw-bold">{{ task.progress_percentage }}%</span>
+              </div>
+            </td>
+            <td class="small">
+              {% if task.delay_reason %}
+                <span class="badge bg-warning-subtle text-warning border border-warning">{{ task.delay_reason }}</span>
+              {% else %}
+                <span class="text-muted">On Track</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if task.status == 'Completed' %}
+                <span class="badge bg-success-subtle text-success border border-success px-2 py-1">Completed</span>
+              {% elif task.status == 'In Progress' %}
+                <span class="badge bg-warning-subtle text-warning border border-warning px-2 py-1">In Progress</span>
+              {% elif task.status == 'Delayed' %}
+                <span class="badge bg-danger-subtle text-danger border border-danger px-2 py-1">Delayed</span>
+              {% else %}
+                <span class="badge bg-secondary-subtle text-secondary border px-2 py-1">Planned</span>
+              {% endif %}
+            </td>
+            <td class="text-end text-nowrap">
+              <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2 me-1" data-bs-toggle="modal" data-bs-target="#editTaskModal{{ task.pk }}" title="Edit Task">
+                <i class="bi bi-pencil-square"></i>
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2" data-bs-toggle="modal" data-bs-target="#deleteTaskModal{{ task.pk }}" title="Delete Task">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+
+          <!-- MODAL: Edit Work Plan Task {{ task.pk }} -->
+          <div class="modal fade" id="editTaskModal{{ task.pk }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content nova-card border-0">
+                <form method="POST" action="{% url 'projects:project_schedule' project.pk %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="edit_task">
+                  <input type="hidden" name="task_id" value="{{ task.pk }}">
+                  <div class="modal-header border-bottom">
+                    <h5 class="modal-title font-heading fw-bold">
+                      <i class="bi bi-pencil-square text-primary me-2"></i> Edit Milestone / Work Task
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body p-4 text-start">
+                    <div class="mb-3">
+                      <label class="form-label small fw-bold">Task Title <span class="text-danger">*</span></label>
+                      <input type="text" name="title" class="form-control nova-input" value="{{ task.title }}" required>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label small fw-bold">Work Area / Zone</label>
+                      <input type="text" name="work_area" class="form-control nova-input" value="{{ task.work_area|default:'' }}">
+                    </div>
+                    <div class="row g-2 mb-3">
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold">Planned Start</label>
+                        <input type="date" name="start_date" class="form-control nova-input" value="{{ task.start_date|date:'Y-m-d' }}">
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold">Target Completion</label>
+                        <input type="date" name="target_date" class="form-control nova-input" value="{{ task.target_date|date:'Y-m-d' }}">
+                      </div>
+                    </div>
+                    <div class="row g-2 mb-3">
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold">Progress (%)</label>
+                        <input type="number" name="progress_percentage" class="form-control nova-input" min="0" max="100" value="{{ task.progress_percentage }}">
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold">Status</label>
+                        <select name="status" class="form-select nova-input">
+                          <option value="Planned" {% if task.status == 'Planned' %}selected{% endif %}>Planned</option>
+                          <option value="In Progress" {% if task.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                          <option value="Completed" {% if task.status == 'Completed' %}selected{% endif %}>Completed</option>
+                          <option value="Delayed" {% if task.status == 'Delayed' %}selected{% endif %}>Delayed</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label small fw-bold">Delay Reason (if applicable)</label>
+                      <input type="text" name="delay_reason" class="form-control nova-input" value="{{ task.delay_reason|default:'' }}">
+                    </div>
+                  </div>
+                  <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn nova-btn-primary btn-sm px-4">Update Task</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- MODAL: Delete Work Plan Task {{ task.pk }} -->
+          <div class="modal fade" id="deleteTaskModal{{ task.pk }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-danger text-white">
+                  <h5 class="modal-title font-heading fw-bold">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> Confirm Delete Milestone / Task
+                  </h5>
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="{% url 'projects:project_schedule' project.pk %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="delete_task">
+                  <input type="hidden" name="task_id" value="{{ task.pk }}">
+                  <div class="modal-body p-4 text-start">
+                    <p class="mb-2">Are you sure you want to delete work task <strong>{{ task.title }}</strong>?</p>
+                    <div class="bg-light p-3 rounded-3 mb-3 border small">
+                      <div>Zone / Area: <strong>{{ task.work_area|default:"All Areas" }}</strong> &bull; Status: <strong>{{ task.status }}</strong> ({{ task.progress_percentage }}%)</div>
+                      {% if task.start_date or task.target_date %}
+                      <div>Schedule: {{ task.start_date|date:"d M Y"|default:"TBD" }} &rarr; {{ task.target_date|date:"d M Y"|default:"TBD" }}</div>
+                      {% endif %}
+                    </div>
+                    <div class="alert alert-warning small mb-0">
+                      <i class="bi bi-info-circle me-1"></i> This task and its progress metrics will be permanently removed from the master project schedule.
+                    </div>
+                  </div>
+                  <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger px-4">Delete Task</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% empty %}
+          <tr>
+            <td colspan="8" class="text-center py-5 text-muted">
+              <i class="bi bi-calendar2-x fs-2 d-block mb-2 text-secondary"></i>
+              No work plan tasks scheduled yet. Add milestones and structural tasks to begin tracking progress.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add Work Plan Task -->
+<div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content nova-card border-0">
+      <form method="POST" action="{% url 'projects:project_schedule' project.pk %}">
+        {% csrf_token %}
+        <div class="modal-header border-bottom">
+          <h5 class="modal-title font-heading fw-bold" id="addTaskModalLabel">
+            <i class="bi bi-calendar-plus text-primary me-2"></i> Add Milestone / Work Task
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Task / Milestone Title <span class="text-danger">*</span></label>
+            {{ form.title }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Work Area / Zone</label>
+            {{ form.work_area }}
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Planned Start</label>
+              {{ form.start_date }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Target Completion</label>
+              {{ form.target_date }}
+            </div>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Progress (%)</label>
+              {{ form.progress_percentage }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Status</label>
+              {{ form.status }}
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Delay Reason (if applicable)</label>
+            {{ form.delay_reason }}
+          </div>
+        </div>
+        <div class="modal-footer border-top">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn nova-btn-primary btn-sm px-4">Save Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

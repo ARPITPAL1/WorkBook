@@ -1,23 +1,25 @@
 /* ==========================================================================
    NOVA THEME - Architectural Construction Management Design System
-   Inspired by Nova Astro: Editorial layout, warm off-white, deep navy & muted gold
+   Inspired by Nova Astro Reference: Warm off-white, editorial typography,
+   deep black/navy, muted caramel gold, and responsive grids.
    ========================================================================== */
 
 :root {
-  /* Color Palette */
-  --nova-bg-page: #f9f9f8;
+  /* Color Palette - Precise Match to Nova Reference */
+  --nova-bg-page: #faf9f5;
+  --nova-bg-page-alt: #fffdf9;
   --nova-bg-surface: #ffffff;
-  --nova-bg-surface-subtle: #f3f3f0;
+  --nova-bg-surface-subtle: #f4f3ef;
   
   --nova-text-main: #141518;
-  --nova-text-muted: #676971;
+  --nova-text-muted: #5d6069;
   --nova-text-subtle: #989a9f;
   
-  --nova-brand-navy: #0d1527;
-  --nova-brand-navy-light: #18233c;
-  --nova-brand-gold: #c59b27;
-  --nova-brand-gold-hover: #b0871d;
-  --nova-brand-gold-subtle: rgba(197, 155, 39, 0.12);
+  --nova-brand-navy: #141518;
+  --nova-brand-navy-light: #20242c;
+  --nova-brand-gold: #b8864e;
+  --nova-brand-gold-hover: #a1733e;
+  --nova-brand-gold-subtle: rgba(184, 134, 78, 0.12);
   
   --nova-status-success: #198754;
   --nova-status-warning: #d97706;
@@ -30,13 +32,26 @@
   --nova-radius-md: 10px;
   --nova-radius-lg: 16px;
   --nova-radius-xl: 24px;
+  --nova-radius-pill: 9999px;
 
   --nova-shadow-sm: 0 1px 3px rgba(13, 21, 39, 0.04);
-  --nova-shadow-md: 0 4px 16px rgba(13, 21, 39, 0.06);
-  --nova-shadow-lg: 0 12px 32px rgba(13, 21, 39, 0.09);
+  --nova-shadow-md: 0 6px 20px rgba(13, 21, 39, 0.07);
+  --nova-shadow-lg: 0 16px 36px rgba(13, 21, 39, 0.1);
+  --nova-shadow-hero-btn: 0 10px 24px rgba(20, 21, 24, 0.18);
   
   --nova-font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --nova-font-heading: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Global Reset & Box Sizing */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -46,121 +61,332 @@ body {
   font-size: 0.95rem;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
+/* Headings */
 h1, h2, h3, h4, h5, h6, .font-heading {
   font-family: var(--nova-font-heading);
   color: var(--nova-brand-navy);
   font-weight: 700;
   letter-spacing: -0.025em;
+  margin-top: 0;
 }
 
-/* Eyebrow Label */
-.nova-eyebrow {
-  font-size: 0.75rem;
+/* Standardized Content Container */
+.nova-container {
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: clamp(16px, 4.5vw, 48px);
+  min-width: 0;
+}
+
+/* Announcement Top Bar (Faithful to Nova Astro) */
+.nova-top-bar {
+  background-color: #111317;
+  color: #c9ccd4;
+  font-size: 0.76rem;
+  letter-spacing: 0.02em;
+  padding: 0.5rem 0;
+}
+
+.nova-top-bar a {
+  color: #e5e7eb;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.nova-top-bar a:hover {
+  color: #ffffff;
+}
+
+.nova-top-pill {
+  background: #c59b27;
+  color: #111317;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: var(--nova-brand-gold);
-  margin-bottom: 0.5rem;
-  display: block;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--nova-radius-pill);
+  font-size: 0.72rem;
+  text-decoration: none;
 }
 
-/* Navbar */
-.nova-navbar {
-  background-color: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(12px);
+/* Minimal Navbar (Header) */
+.nova-header {
+  background-color: var(--nova-bg-page);
   border-bottom: 1px solid var(--nova-border-subtle);
-  padding: 0.85rem 0;
-  transition: all 0.25s ease;
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
-.nova-brand {
+.nova-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 78px;
+  min-width: 0;
+}
+
+/* Logo */
+.nova-logo {
   font-family: var(--nova-font-heading);
   font-weight: 800;
-  font-size: 1.35rem;
-  letter-spacing: 0.12em;
-  color: var(--nova-brand-navy) !important;
+  font-size: 1.45rem;
+  letter-spacing: 0.16em;
+  color: var(--nova-brand-navy);
+  text-decoration: none;
   text-transform: uppercase;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.nova-brand-badge {
-  background: var(--nova-brand-gold);
-  color: #fff;
-  font-size: 0.65rem;
-  padding: 0.15rem 0.45rem;
-  border-radius: var(--nova-radius-sm);
-  letter-spacing: 0.05em;
-  font-weight: 700;
+.nova-logo:hover {
+  color: var(--nova-brand-navy);
 }
 
-.nova-nav-link {
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: var(--nova-text-muted) !important;
-  padding: 0.5rem 0.85rem !important;
+/* Center Nav Links */
+.nova-nav-links {
+  display: flex;
+  align-items: center;
+  gap: clamp(1.25rem, 2.5vw, 2.25rem);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nova-nav-item a {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--nova-text-main);
+  text-decoration: none;
   transition: color 0.2s ease;
 }
 
-.nova-nav-link:hover, .nova-nav-link.active {
-  color: var(--nova-brand-navy) !important;
+.nova-nav-item a:hover {
+  color: var(--nova-brand-gold);
 }
 
-/* Buttons */
-.btn-nova-primary {
-  background-color: var(--nova-brand-navy);
-  color: #ffffff;
-  border: 1px solid var(--nova-brand-navy);
-  font-weight: 600;
-  border-radius: var(--nova-radius-md);
-  padding: 0.65rem 1.4rem;
-  transition: all 0.2s ease;
+/* Right Nav Actions */
+.nova-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
 }
 
-.btn-nova-primary:hover {
-  background-color: var(--nova-brand-navy-light);
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(13, 21, 39, 0.15);
-  transform: translateY(-1px);
+.nova-lang-selector {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--nova-text-muted);
 }
 
-.btn-nova-gold {
-  background-color: var(--nova-brand-gold);
-  color: #ffffff;
-  border: 1px solid var(--nova-brand-gold);
-  font-weight: 600;
-  border-radius: var(--nova-radius-md);
-  padding: 0.65rem 1.4rem;
-  transition: all 0.2s ease;
-}
-
-.btn-nova-gold:hover {
-  background-color: var(--nova-brand-gold-hover);
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(197, 155, 39, 0.2);
-  transform: translateY(-1px);
-}
-
-.btn-nova-outline {
-  background-color: transparent;
+.nova-lang-selector span.active {
   color: var(--nova-brand-navy);
-  border: 1px solid var(--nova-border-card);
-  font-weight: 600;
-  border-radius: var(--nova-radius-md);
-  padding: 0.65rem 1.35rem;
-  transition: all 0.2s ease;
 }
 
-.btn-nova-outline:hover {
+.nova-lang-selector span.divider {
+  color: var(--nova-border-card);
+  margin: 0 0.25rem;
+}
+
+/* Mobile Nav Toggle */
+.nova-mobile-toggle {
+  display: none;
+  background: none;
+  border: 1px solid var(--nova-border-card);
+  border-radius: var(--nova-radius-md);
+  padding: 0.45rem 0.65rem;
+  font-size: 1.25rem;
+  color: var(--nova-brand-navy);
+  cursor: pointer;
+}
+
+@media (max-width: 991.98px) {
+  .nova-nav-links {
+    display: none;
+  }
+  .nova-mobile-toggle {
+    display: block;
+  }
+}
+
+/* ==========================================================================
+   HERO SECTION - Pixel-precise recreation of Screenshot 3
+   ========================================================================== */
+.nova-hero {
+  background-color: var(--nova-bg-page);
+  padding-top: clamp(2.5rem, 5vw, 4.5rem);
+  padding-bottom: clamp(3rem, 6vw, 5.5rem);
+  position: relative;
+  overflow: hidden;
+}
+
+.nova-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  align-items: center;
+  gap: clamp(2rem, 4vw, 4.5rem);
+  width: 100%;
+  min-width: 0;
+}
+
+.nova-hero-content {
+  min-width: 0;
+}
+
+.hero-eyebrow {
+  font-size: clamp(0.75rem, 0.9vw, 0.82rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--nova-brand-gold);
+  margin-bottom: 1.25rem;
+  display: block;
+}
+
+.hero-headline {
+  font-family: var(--nova-font-heading);
+  font-size: clamp(2.6rem, 5vw, 5.2rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  color: var(--nova-brand-navy);
+  margin-bottom: 1.5rem;
+  word-break: break-word;
+}
+
+.hero-highlight {
+  color: var(--nova-brand-gold);
+  display: inline;
+}
+
+.hero-description {
+  font-size: clamp(1rem, 1.2vw, 1.15rem);
+  line-height: 1.65;
+  color: var(--nova-text-muted);
+  max-width: 620px;
+  margin-bottom: 2.25rem;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Pill CTA Buttons */
+.btn-hero-primary {
+  background-color: var(--nova-brand-navy);
+  color: #ffffff !important;
+  border: 1px solid var(--nova-brand-navy);
+  border-radius: var(--nova-radius-pill);
+  padding: 0.85rem 2.25rem;
+  font-weight: 600;
+  font-size: 0.98rem;
+  box-shadow: var(--nova-shadow-hero-btn);
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn-hero-primary:hover {
+  background-color: var(--nova-brand-navy-light);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(20, 21, 24, 0.24);
+}
+
+.btn-hero-secondary {
+  background-color: transparent;
+  color: var(--nova-brand-navy) !important;
+  border: 1.5px solid rgba(20, 21, 24, 0.25);
+  border-radius: var(--nova-radius-pill);
+  padding: 0.85rem 2.25rem;
+  font-weight: 600;
+  font-size: 0.98rem;
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn-hero-secondary:hover {
   background-color: var(--nova-bg-surface-subtle);
   border-color: var(--nova-brand-navy);
   color: var(--nova-brand-navy);
+  transform: translateY(-1px);
 }
 
-/* Cards & Surfaces */
+/* Hero Right Column Organic Image */
+.hero-image-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+.hero-image-blob {
+  width: 100%;
+  height: auto;
+  max-height: 520px;
+  object-fit: cover;
+  display: block;
+  border-radius: 40% 60% 70% 30% / 45% 45% 55% 55%;
+  filter: drop-shadow(0 15px 30px rgba(20, 21, 24, 0.08));
+  transition: transform 0.4s ease;
+}
+
+.hero-image-blob:hover {
+  transform: scale(1.015);
+}
+
+/* Hero Responsive Breakpoints */
+@media (max-width: 1023.98px) {
+  .nova-hero-grid {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+  .hero-image-wrapper {
+    max-width: 440px;
+    margin-inline: auto;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+  .btn-hero-primary, .btn-hero-secondary {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* ==========================================================================
+   PORTFOLIO & DASHBOARD LAYOUT SYSTEM
+   ========================================================================== */
+
+/* Universal Card */
 .nova-card {
   background-color: var(--nova-bg-surface);
   border: 1px solid var(--nova-border-card);
@@ -168,12 +394,37 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   box-shadow: var(--nova-shadow-sm);
   transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
   overflow: hidden;
+  min-width: 0;
 }
 
 .nova-card-hover:hover {
   transform: translateY(-3px);
   box-shadow: var(--nova-shadow-md);
   border-color: rgba(20, 21, 24, 0.2);
+}
+
+/* Stats Summary Box */
+.nova-stat-block {
+  padding: 1.25rem 1.5rem;
+  min-width: 0;
+}
+
+.nova-stat-number {
+  font-family: var(--nova-font-heading);
+  font-weight: 700;
+  font-size: clamp(1.4rem, 2.2vw, 1.85rem);
+  color: var(--nova-brand-navy);
+  line-height: 1.1;
+  word-break: break-word;
+}
+
+.nova-stat-label {
+  font-size: 0.78rem;
+  color: var(--nova-text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.35rem;
 }
 
 /* Inputs & Form Controls */
@@ -184,6 +435,7 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   background-color: #ffffff;
   color: var(--nova-text-main);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-size: 0.92rem;
 }
 
 .nova-input:focus {
@@ -197,10 +449,11 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   font-size: 0.75rem;
   font-weight: 600;
   padding: 0.35rem 0.75rem;
-  border-radius: 50px;
+  border-radius: var(--nova-radius-pill);
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
+  white-space: nowrap;
 }
 
 .nova-badge-planning {
@@ -223,48 +476,151 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   color: #1a73e8;
 }
 
-/* Stats Box */
-.nova-stat-block {
-  border-right: 1px solid var(--nova-border-subtle);
-  padding: 1rem 1.5rem;
-}
+/* ==========================================================================
+   INDIVIDUAL PROJECT DASHBOARD COMPONENTS
+   ========================================================================== */
 
-.nova-stat-block:last-child {
-  border-right: none;
-}
-
-.nova-stat-number {
-  font-family: var(--nova-font-heading);
-  font-weight: 700;
-  font-size: 1.85rem;
-  color: var(--nova-brand-navy);
-  line-height: 1.1;
-}
-
-.nova-stat-label {
-  font-size: 0.8rem;
-  color: var(--nova-text-muted);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-top: 0.25rem;
-}
-
-/* Auth Card */
-.nova-auth-wrapper {
-  min-height: calc(100vh - 80px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2.5rem 1rem;
-}
-
-.nova-auth-card {
-  max-width: 480px;
-  width: 100%;
+/* Project Header Card */
+.project-header-card {
   background: #ffffff;
   border: 1px solid var(--nova-border-card);
   border-radius: var(--nova-radius-xl);
-  box-shadow: var(--nova-shadow-lg);
-  padding: 2.75rem 2.5rem;
+  box-shadow: var(--nova-shadow-sm);
+  overflow: hidden;
+  margin-bottom: 2rem;
+  min-width: 0;
+}
+
+.project-header-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(0, 1.2fr);
+  min-width: 0;
+}
+
+@media (max-width: 991.98px) {
+  .project-header-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Sub-Navigation Tabs Strip - Resilient Horizontal Scroll */
+.project-tabs-wrapper {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  padding-bottom: 4px;
+  margin-bottom: 2rem;
+}
+
+.project-tabs-list {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+  padding: 0.35rem;
+  background: #ffffff;
+  border: 1px solid var(--nova-border-card);
+  border-radius: var(--nova-radius-md);
+  list-style: none;
+  margin: 0;
+  min-width: max-content;
+}
+
+.project-tab-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.95rem;
+  border-radius: var(--nova-radius-sm);
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--nova-text-muted);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.project-tab-link:hover {
+  color: var(--nova-brand-navy);
+  background-color: var(--nova-bg-surface-subtle);
+}
+
+.project-tab-link.active {
+  background-color: var(--nova-brand-navy);
+  color: #ffffff !important;
+}
+
+/* Responsive Financial Grid (Eliminates Card Clipping) */
+.financial-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 1.25rem;
+  width: 100%;
+  margin-bottom: 2.5rem;
+  min-width: 0;
+}
+
+.financial-card {
+  background: #ffffff;
+  border: 1px solid var(--nova-border-card);
+  border-radius: var(--nova-radius-lg);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--nova-shadow-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.financial-card-val {
+  font-family: var(--nova-font-heading);
+  font-size: clamp(1.3rem, 1.8vw, 1.75rem);
+  font-weight: 700;
+  line-height: 1.2;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Modules Grid */
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: 1.5rem;
+  width: 100%;
+  margin-bottom: 2.5rem;
+  min-width: 0;
+}
+
+/* Dedicated Responsive Table Wrapper */
+.table-responsive {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-responsive table {
+  margin-bottom: 0;
+}
+
+/* Chart Canvas Wrapper */
+.chart-container-responsive {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  min-height: 280px;
+  max-height: 420px;
+}
+
+/* Footer */
+.nova-footer {
+  margin-top: auto;
+  background-color: #ffffff;
+  border-top: 1px solid var(--nova-border-subtle);
+  padding: 2.5rem 0;
+  color: var(--nova-text-muted);
+  font-size: 0.88rem;
 }
