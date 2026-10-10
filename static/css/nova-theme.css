@@ -1,0 +1,270 @@
+/* ==========================================================================
+   NOVA THEME - Architectural Construction Management Design System
+   Inspired by Nova Astro: Editorial layout, warm off-white, deep navy & muted gold
+   ========================================================================== */
+
+:root {
+  /* Color Palette */
+  --nova-bg-page: #f9f9f8;
+  --nova-bg-surface: #ffffff;
+  --nova-bg-surface-subtle: #f3f3f0;
+  
+  --nova-text-main: #141518;
+  --nova-text-muted: #676971;
+  --nova-text-subtle: #989a9f;
+  
+  --nova-brand-navy: #0d1527;
+  --nova-brand-navy-light: #18233c;
+  --nova-brand-gold: #c59b27;
+  --nova-brand-gold-hover: #b0871d;
+  --nova-brand-gold-subtle: rgba(197, 155, 39, 0.12);
+  
+  --nova-status-success: #198754;
+  --nova-status-warning: #d97706;
+  --nova-status-danger: #dc3545;
+  --nova-status-info: #0d6efd;
+
+  --nova-border-subtle: rgba(20, 21, 24, 0.08);
+  --nova-border-card: rgba(20, 21, 24, 0.11);
+  --nova-radius-sm: 6px;
+  --nova-radius-md: 10px;
+  --nova-radius-lg: 16px;
+  --nova-radius-xl: 24px;
+
+  --nova-shadow-sm: 0 1px 3px rgba(13, 21, 39, 0.04);
+  --nova-shadow-md: 0 4px 16px rgba(13, 21, 39, 0.06);
+  --nova-shadow-lg: 0 12px 32px rgba(13, 21, 39, 0.09);
+  
+  --nova-font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --nova-font-heading: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+}
+
+body {
+  background-color: var(--nova-bg-page);
+  color: var(--nova-text-main);
+  font-family: var(--nova-font-sans);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6, .font-heading {
+  font-family: var(--nova-font-heading);
+  color: var(--nova-brand-navy);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+/* Eyebrow Label */
+.nova-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--nova-brand-gold);
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+/* Navbar */
+.nova-navbar {
+  background-color: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--nova-border-subtle);
+  padding: 0.85rem 0;
+  transition: all 0.25s ease;
+}
+
+.nova-brand {
+  font-family: var(--nova-font-heading);
+  font-weight: 800;
+  font-size: 1.35rem;
+  letter-spacing: 0.12em;
+  color: var(--nova-brand-navy) !important;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nova-brand-badge {
+  background: var(--nova-brand-gold);
+  color: #fff;
+  font-size: 0.65rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--nova-radius-sm);
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+
+.nova-nav-link {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--nova-text-muted) !important;
+  padding: 0.5rem 0.85rem !important;
+  transition: color 0.2s ease;
+}
+
+.nova-nav-link:hover, .nova-nav-link.active {
+  color: var(--nova-brand-navy) !important;
+}
+
+/* Buttons */
+.btn-nova-primary {
+  background-color: var(--nova-brand-navy);
+  color: #ffffff;
+  border: 1px solid var(--nova-brand-navy);
+  font-weight: 600;
+  border-radius: var(--nova-radius-md);
+  padding: 0.65rem 1.4rem;
+  transition: all 0.2s ease;
+}
+
+.btn-nova-primary:hover {
+  background-color: var(--nova-brand-navy-light);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(13, 21, 39, 0.15);
+  transform: translateY(-1px);
+}
+
+.btn-nova-gold {
+  background-color: var(--nova-brand-gold);
+  color: #ffffff;
+  border: 1px solid var(--nova-brand-gold);
+  font-weight: 600;
+  border-radius: var(--nova-radius-md);
+  padding: 0.65rem 1.4rem;
+  transition: all 0.2s ease;
+}
+
+.btn-nova-gold:hover {
+  background-color: var(--nova-brand-gold-hover);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(197, 155, 39, 0.2);
+  transform: translateY(-1px);
+}
+
+.btn-nova-outline {
+  background-color: transparent;
+  color: var(--nova-brand-navy);
+  border: 1px solid var(--nova-border-card);
+  font-weight: 600;
+  border-radius: var(--nova-radius-md);
+  padding: 0.65rem 1.35rem;
+  transition: all 0.2s ease;
+}
+
+.btn-nova-outline:hover {
+  background-color: var(--nova-bg-surface-subtle);
+  border-color: var(--nova-brand-navy);
+  color: var(--nova-brand-navy);
+}
+
+/* Cards & Surfaces */
+.nova-card {
+  background-color: var(--nova-bg-surface);
+  border: 1px solid var(--nova-border-card);
+  border-radius: var(--nova-radius-lg);
+  box-shadow: var(--nova-shadow-sm);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  overflow: hidden;
+}
+
+.nova-card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--nova-shadow-md);
+  border-color: rgba(20, 21, 24, 0.2);
+}
+
+/* Inputs & Form Controls */
+.nova-input {
+  border: 1px solid var(--nova-border-card);
+  border-radius: var(--nova-radius-md);
+  padding: 0.65rem 1rem;
+  background-color: #ffffff;
+  color: var(--nova-text-main);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.nova-input:focus {
+  border-color: var(--nova-brand-navy);
+  box-shadow: 0 0 0 3px rgba(13, 21, 39, 0.1);
+  outline: none;
+}
+
+/* Badges */
+.nova-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: 50px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.nova-badge-planning {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+.nova-badge-active {
+  background-color: #e6f4ea;
+  color: #137333;
+}
+
+.nova-badge-hold {
+  background-color: #fef7e0;
+  color: #b06000;
+}
+
+.nova-badge-completed {
+  background-color: #e8f0fe;
+  color: #1a73e8;
+}
+
+/* Stats Box */
+.nova-stat-block {
+  border-right: 1px solid var(--nova-border-subtle);
+  padding: 1rem 1.5rem;
+}
+
+.nova-stat-block:last-child {
+  border-right: none;
+}
+
+.nova-stat-number {
+  font-family: var(--nova-font-heading);
+  font-weight: 700;
+  font-size: 1.85rem;
+  color: var(--nova-brand-navy);
+  line-height: 1.1;
+}
+
+.nova-stat-label {
+  font-size: 0.8rem;
+  color: var(--nova-text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.25rem;
+}
+
+/* Auth Card */
+.nova-auth-wrapper {
+  min-height: calc(100vh - 80px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem;
+}
+
+.nova-auth-card {
+  max-width: 480px;
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid var(--nova-border-card);
+  border-radius: var(--nova-radius-xl);
+  box-shadow: var(--nova-shadow-lg);
+  padding: 2.75rem 2.5rem;
+}

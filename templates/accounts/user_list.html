@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Team & User Roles - Nova Construct{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <span class="nova-eyebrow">GOVERNANCE & PERMISSIONS</span>
+      <h2 class="font-heading fw-bold mb-1">Company Staff & Roles</h2>
+      <p class="text-muted small mb-0">Role-based access control and project membership matrix</p>
+    </div>
+  </div>
+
+  <div class="nova-card p-4">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Username</th>
+            <th>Full Name</th>
+            <th>Email & Phone</th>
+            <th>Default Role</th>
+            <th>Approval</th>
+            <th>Status</th>
+            <th>Joined</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td class="fw-bold">{{ u.username }}</td>
+            <td>{{ u.get_full_name|default:"-" }}</td>
+            <td>
+              <div class="small">{{ u.email|default:"No email" }}</div>
+              <div class="text-muted small">{{ u.phone_number|default:"" }}</div>
+            </td>
+            <td>
+              <span class="badge bg-dark">{{ u.get_primary_role_display }}</span>
+            </td>
+            <td>
+              {% if u.is_approved %}
+                <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> Approved</span>
+              {% else %}
+                <span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i> Pending Approval</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if u.is_active %}
+                <span class="text-success small fw-semibold">Active</span>
+              {% else %}
+                <span class="text-danger small fw-semibold">Inactive</span>
+              {% endif %}
+            </td>
+            <td class="small text-muted">{{ u.date_joined|date:"M d, Y" }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center py-4 text-muted">No users found.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

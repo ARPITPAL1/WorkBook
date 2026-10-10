@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - Nova Construct{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row">
+    <div class="col-lg-4 mb-4">
+      <div class="nova-card p-4 text-center">
+        <div class="d-inline-flex align-items-center justify-center rounded-circle bg-light border p-4 mb-3">
+          <i class="bi bi-person text-secondary" style="font-size: 3.5rem;"></i>
+        </div>
+        <h4 class="font-heading fw-bold mb-1">{{ user.get_full_name|default:user.username }}</h4>
+        <div class="badge bg-dark mb-2">{{ user.get_primary_role_display }}</div>
+        <p class="text-muted small mb-0">{{ user.organization|default:"Nova Construction Corp" }}</p>
+        <p class="text-muted small">{{ user.email|default:"No email provided" }}</p>
+      </div>
+    </div>
+
+    <div class="col-lg-8">
+      <div class="nova-card p-4 mb-4">
+        <h5 class="font-heading fw-bold mb-3 border-bottom pb-2">Profile Details</h5>
+        <form method="post">
+          {% csrf_token %}
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">First Name</label>
+              {{ form.first_name }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Last Name</label>
+              {{ form.last_name }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Email</label>
+              {{ form.email }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Phone Number</label>
+              {{ form.phone_number }}
+            </div>
+            <div class="col-12">
+              <label class="form-label small fw-semibold">Company / Organization</label>
+              {{ form.organization }}
+            </div>
+          </div>
+          <div class="mt-4">
+            <button type="submit" class="btn btn-nova-primary">
+              <i class="bi bi-check2 me-1"></i> Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="nova-card p-4">
+        <h5 class="font-heading fw-bold mb-3 border-bottom pb-2">Active Project Assignments</h5>
+        {% if memberships %}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Project Code</th>
+                <th>Project Name</th>
+                <th>Assigned Role</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for mem in memberships %}
+              <tr>
+                <td class="fw-bold">{{ mem.project.code }}</td>
+                <td>{{ mem.project.name }}</td>
+                <td><span class="badge bg-primary">{{ mem.get_role_display }}</span></td>
+                <td><span class="badge bg-success">Active</span></td>
+                <td>
+                  <a href="{% url 'projects:project_detail' mem.project.pk %}" class="btn btn-sm btn-nova-outline">
+                    Open Workspace <i class="bi bi-arrow-right ms-1"></i>
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p class="text-muted small mb-0">No active direct project assignments found.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
