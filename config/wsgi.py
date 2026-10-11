@@ -13,10 +13,15 @@ if os.environ.get('VERCEL'):
         base_dir = Path(__file__).resolve().parent.parent
         bundled_db = base_dir / 'db.sqlite3'
         tmp_db = Path('/tmp/db.sqlite3')
+        tmp_db.parent.mkdir(parents=True, exist_ok=True)
         if not tmp_db.exists() or tmp_db.stat().st_size == 0:
             if bundled_db.exists() and bundled_db.stat().st_size > 0:
-                tmp_db.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(bundled_db, tmp_db)
+            else:
+                import django
+                django.setup()
+                from django.core.management import call_command
+                call_command('migrate', interactive=False)
     except Exception as exc:
         print(f"Vercel DB initialization warning: {exc}")
 
