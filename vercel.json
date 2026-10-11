@@ -8,20 +8,16 @@
         "maxLambdaSize": "15mb",
         "runtime": "python3.12"
       }
-    },
-    {
-      "src": "static/**",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
-      "src": "/static/(.*)",
-      "dest": "/static/$1"
-    },
-    {
       "src": "/(.*)",
       "dest": "config/wsgi.py"
     }
-  ]
+  ],
+  "env": {
+    "USE_SQLITE": "True",
+    "VERCEL": "1"
+  }
 }

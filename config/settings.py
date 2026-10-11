@@ -26,11 +26,16 @@ SECRET_KEY = os.environ.get(
     'django-insecure-prod-key-for-construction-diary-change-me-in-production-2026'
 )
 
-DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
+DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = [host.strip() for host in os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,[::1],.vercel.app').split(',') if host.strip()]
-if '.vercel.app' not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append('.vercel.app')
+if os.environ.get('VERCEL'):
+    ALLOWED_HOSTS = ['*']
+else:
+    raw_hosts = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,[::1],testserver,.vercel.app')
+    ALLOWED_HOSTS = [host.strip() for host in raw_hosts.split(',') if host.strip()]
+    for host in ('localhost', '127.0.0.1', '[::1]', 'testserver', '.vercel.app'):
+        if host not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(host)
 
 CSRF_TRUSTED_ORIGINS = [
     'https://*.vercel.app',
@@ -83,7 +88,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
-ASGI_APPLICATION = 'config.asgi.application'
 
 # Database Configuration
 # Supports DATABASE_URL (Vercel Postgres/Neon/Supabase), local PostgreSQL, and SQLite fallback
@@ -107,7 +111,16 @@ if DATABASE_URL:
 elif USE_SQLITE:
     sqlite_path = BASE_DIR / 'db.sqlite3'
     if os.environ.get('VERCEL'):
-        sqlite_path = '/tmp/db.sqlite3'
+        tmp_db = Path('/tmp/db.sqlite3')
+        if not tmp_db.exists() or tmp_db.stat().st_size == 0:
+            if sqlite_path.exists() and sqlite_path.stat().st_size > 0:
+                import shutil
+                try:
+                    tmp_db.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(sqlite_path, tmp_db)
+                except Exception as e:
+                    print(f"Error copying sqlite db: {e}")
+        sqlite_path = tmp_db
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -157,6 +170,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_MANIFEST_STRICT = False
 
 # Media files
 MEDIA_URL = '/media/'
